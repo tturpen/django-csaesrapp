@@ -30,7 +30,7 @@ TIME_ZONE = 'America/Chicago'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = "532b46ede62a21d7806eb202"
+SITE_ID = "532b603f78b359502aca2363"
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -117,6 +117,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     # Uncomment the next line to enable the admin:
      'django.contrib.admin',
+     'apps.admin'
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
