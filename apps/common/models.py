@@ -12,13 +12,23 @@ class StaticFile(models.Model):
     #Abstract base class
     class Meta:
         abstract = True
-
         
+class AudioSource(StaticFile):
+    """Audio sources are the original audio files...of anything."""
+    encoding = models.TextField()
+    length_seconds = models.TimeField()
+    sample_rate = models.FloatField()
+    
+    #Abstract base class
+    class Meta:
+        abstract = True
+
+         
 class PromptSource(StaticFile):
     """A file with a header and prompt on each line"""
-    num_prompts = models.IntegerField()
+    num_prompts = models.IntegerField()   
     
-class Prompt(models.Model):
+class WordPrompt(models.Model):
     """Generic prompt model"""
     source = models.ForeignKey(PromptSource)
     #Line number in the prompt source
@@ -31,48 +41,7 @@ class Prompt(models.Model):
     #Abstract base class
     class Meta:
         abstract = True
-
-    
-class ResourceManagementPrompt(Prompt):
-    """Prompts from the Resource Management Corpus"""
-    rm_prompt_id = models.IntegerField()
-    
-            
-class AudioSource(StaticFile):
-    """Audio sources are the original audio files...of anything."""
-    encoding = models.TextField()
-    length_seconds = models.TimeField()
-    sample_rate = models.FloatField()
-    
-    #Abstract base class
-    class Meta:
-        abstract = True
-
-class ResourcesManagementAudioSource(AudioSource):
-    speaker_id = models.TextField()
-    
-    
-class ElicitationAudioRecording(AudioSource):
-    """Downloaded from Vocaroo given a submitted assignment
-    """
-    worker_id = models.TextField()
-    
-    
-class AudioClip(StaticFile):
-    """Audio Clips are portions or the entirety of an audio source
-        Option to be web accessible
-    """
-    #Ideally this would point to a generic Audio Source but I don't know how
-    source_id = GenericForeignKey()
-    http_url = models.URLField()
-    length_seconds = models.TimeField()
-    
-    
-class Transcription(Prompt):
-    """The generic transcription class"""
-    #assignment_id = models.ForeignKey(TranscriptionAssignment)
-    audio_clip_id = models.ForeignKey(AudioClip)
-
+        
     
 ###########          Queue models                  #################################################
 class ModelNode(models.Model):
@@ -95,17 +64,7 @@ class ObjQueue(models.Model):
     #Abstract base class
     class Meta:
         abstract = True    
-    
-    
-class AudioClipQueue(ObjQueue):
-    """A queue of audio clips"""
-    name = models.TextField("AudioClips")
-    
-    
-class PromptQueue(ObjQueue):
-    """A queue of prompts"""
-    name = models.TextField("Prompts")
-    
+            
     
 ###########          Hit models                  #################################################
 class MturkHit(models.Model):
@@ -116,17 +75,6 @@ class MturkHit(models.Model):
     #Abstract base class
     class Meta:
         abstract = True
-    
-class ElicitationHit(MturkHit):
-    """The specific elicitation Hit class"""
-    prompts = ListField(models.ForeignKey(ResourceManagementPrompt))
-    
-    
-class TranscriptionHit(MturkHit):
-    """The specific transcription Hit"""
-    audio_clips = ListField(models.ForeignKey(AudioClip))
-    
-
 
 ###########          Assignment models                  #################################################
 
@@ -153,15 +101,4 @@ class CsaesrAssignment(MturkAssignment):
     #Abstract base class
     class Meta:
         abstract = True
-
-
-class TranscriptionAssignment(CsaesrAssignment):
-    """The specific transcription assignment class"""
-    transcriptions = SetField(models.ForeignKey(Transcription))
-    hit_id = models.ForeignKey(TranscriptionHit)
-
-    
-class ElicitationAssignment(CsaesrAssignment):
-    """The specific elicitation assignment class"""
-    recordings = SetField(models.ForeignKey(ElicitationAudioRecording))
     
