@@ -4,6 +4,15 @@ from django.contrib.contenttypes.generic import GenericForeignKey
 from djangotoolbox.fields import ListField, SetField
 
 ###########          General models                  #################################################
+class Worker(models.Model):
+    """The generic mturk worker model"""
+    #This can be any type of assignment
+    worker_id = models.TextField()
+    approved_assignments = SetField(GenericForeignKey)
+    denied_assignments = SetField(GenericForeignKey)
+    submitted_assignments = SetField(GenericForeignKey)
+    
+    
 class StaticFile(models.Model):
     """Any models of static files should inherit from this."""
     disk_space = models.IntegerField()
