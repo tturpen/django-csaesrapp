@@ -107,7 +107,6 @@ class HitHandler():
     def __init__(self,connection,template_dir):
         self.vocaroo_url = "https://vocaroo.com/?minimal"
         self.conn = connection
-        base_dir = os.getcwd()
         self.templates = {}
         self.html_tags = {"audio_url" : "${audiourl}",
                           "title" : "${title}",
