@@ -46,43 +46,43 @@ class ElicitationPipeline(MturkPipeline):
             normalized_prompt =  self.normalizer.rm_prompt_normalization(prompt)
             self.mf.create_word_prompt_model(source_model, prompt, normalized_prompt, line_number, key, len(prompt))       
  
-    def enqueue_prompts_and_generate_hits(self):
-        prompts = self.mh.get_models_by_state("prompts", "New")
-        for prompt in prompts:
-            self.mh.enqueue_prompt(prompt["_id"], 1, 5)
-            prompt_queue = self.mh.get_prompt_queue()
-            prompt_pairs = self.mh.get_prompt_pairs(prompt_queue)
-            if prompt_pairs:
-                hit_title = "Audio Elicitation"
-                question_title = "Speak and Record your Voice" 
-                keywords = "audio, elicitation, speech, recording"
-                if self.cost_sensitive:
-                    reward_per_clip = 0.05
-                    max_assignments = 2
-                    estimated_cost = self.hh.estimate_html_HIT_cost(prompt_pairs,reward_per_clip=reward_per_clip,\
-                                                                    max_assignments=max_assignments)
-                    prompts_in_hits = self.mh.prompts_already_in_hit(prompt_pairs)
-                    if prompts_in_hits:
-                        #If one or more clips are already in a HIT, remove it from the queue
-                        self.mh.remove_artifact_from_queue(prompts_in_hits)
-                    elif self.balance - estimated_cost >= 0:
-                        #if we have enough money, create the HIT
-                        response = self.hh.make_html_elicitation_HIT(prompt_pairs,hit_title,
-                                                     question_title, keywords,max_assignments=max_assignments,reward_per_clip=reward_per_clip)
-#                         response = self.hh.make_question_form_elicitation_HIT(prompt_pairs,hit_title,
-#                                                      question_title, keywords)
-                        self.balance = self.balance - estimated_cost
-                        if type(response) == ResultSet and len(response) == 1 and response[0].IsValid:
-                            response = response[0]
-                            self.mh.remove_artifacts_from_queue("prompt_queue",prompt_queue)
-                            prompt_ids = [w["prompt_id"] for w in prompt_queue]    
-                            hit_id = response.HITId
-                            hit_type_id = response.HITTypeId
-                            self.mh.create_elicitation_hit_artifact(hit_id,hit_type_id,prompt_ids)  
-                            self.mh.update_artifacts_by_id("prompts", prompt_ids, "hit_id", hit_id)      
-                            self.logger.info("Successfully created HIT: %s"%hit_id)
-                    else:
-                        return True
+#     def enqueue_prompts_and_generate_hits(self):
+#         prompts = self.mh.get_models_by_state("prompts", "New")
+#         for prompt in prompts:
+#             self.mh.enqueue_prompt(prompt["_id"], 1, 5)
+#             prompt_queue = self.mh.get_prompt_queue()
+#             prompt_pairs = self.mh.get_prompt_pairs(prompt_queue)
+#             if prompt_pairs:
+#                 hit_title = "Audio Elicitation"
+#                 question_title = "Speak and Record your Voice" 
+#                 keywords = "audio, elicitation, speech, recording"
+#                 if self.cost_sensitive:
+#                     reward_per_clip = 0.05
+#                     max_assignments = 2
+#                     estimated_cost = self.hh.estimate_html_HIT_cost(prompt_pairs,reward_per_clip=reward_per_clip,\
+#                                                                     max_assignments=max_assignments)
+#                     prompts_in_hits = self.mh.prompts_already_in_hit(prompt_pairs)
+#                     if prompts_in_hits:
+#                         #If one or more clips are already in a HIT, remove it from the queue
+#                         self.mh.remove_artifact_from_queue(prompts_in_hits)
+#                     elif self.balance - estimated_cost >= 0:
+#                         #if we have enough money, create the HIT
+#                         response = self.hh.make_html_elicitation_HIT(prompt_pairs,hit_title,
+#                                                      question_title, keywords,max_assignments=max_assignments,reward_per_clip=reward_per_clip)
+# #                         response = self.hh.make_question_form_elicitation_HIT(prompt_pairs,hit_title,
+# #                                                      question_title, keywords)
+#                         self.balance = self.balance - estimated_cost
+#                         if type(response) == ResultSet and len(response) == 1 and response[0].IsValid:
+#                             response = response[0]
+#                             self.mh.remove_artifacts_from_queue("prompt_queue",prompt_queue)
+#                             prompt_ids = [w["prompt_id"] for w in prompt_queue]    
+#                             hit_id = response.HITId
+#                             hit_type_id = response.HITTypeId
+#                             self.mh.create_elicitation_hit_artifact(hit_id,hit_type_id,prompt_ids)  
+#                             self.mh.update_artifacts_by_id("prompts", prompt_ids, "hit_id", hit_id)      
+#                             self.logger.info("Successfully created HIT: %s"%hit_id)
+#                     else:
+#                         return True
                        
     def run(self):
         #audio_file_dir = "/home/taylor/data/corpora/LDC/LDC93S3A/rm_comp/rm1_audio1/rm1/dep_trn"

@@ -63,6 +63,7 @@ class Worker(StateModel):
     approved_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
     denied_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
     submitted_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
+    blocked_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
     
         
 class PromptQueue(ObjQueue):

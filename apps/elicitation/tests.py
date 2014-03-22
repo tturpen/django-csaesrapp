@@ -15,5 +15,3 @@ class SimpleTest(TestCase):
         #This takes a while
         ep.load_PromptSource_RawToList(prompt_file_uri)
         self.assertEquals(1,1)
-        
-    def test_pipeline_

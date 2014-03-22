@@ -19,7 +19,7 @@ class ModelFactory(object):
         elif update:
             self.mh.update_model(model,document)
             pk = model.pk
-        #self.update_model_state(collection, art_id)
+        self.mh.update_model_state(collection, model)
         return model       
     
     

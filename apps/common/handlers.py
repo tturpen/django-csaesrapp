@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from apps.common.exceptions import TooManyEntries, WrongFieldsExecption
+from apps.common.exceptions import TooManyEntries, WrongFieldsExecption, ModelStateNotFoundError
 
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -141,22 +141,22 @@ class ModelHandler(object):
         """Remove the artifact_queue from the queue"""
         self.remove_artifacts(queue_name,artifact_queue)
         self.logger.info("Finished updating database(%s) queue."%self.db_name) 
-        
-    def get_collection_state_map(self,collection):
-        return self.c["state_maps"].find({})[0][collection]
             
-#     def induce_artifact_state(self,collection,artifact_id):
-#         func_class, states = self.get_collection_state_map(collection)
-#         instance = getattr(Elicitation,func_class)()
-#         artifact = self.get_artifact_by_id(collection, artifact_id)
-#         prev_state = "New"
-#         for state in states:
-#             func = getattr(instance,state)
-#             res = func(artifact)
-#             if not res:
-#                 return prev_state
-#             prev_state = state
-#         return state
+    def induce_model_state(self,collection,model):
+        """Call the functions from the statemap, given the collection class,
+            on the model
+            return the state
+        """
+        func_class, states = self.state_map[collection]
+        instance = func_class()
+        prev_state = "New"
+        for state in states:
+            func = getattr(instance,state)
+            res = func(model)
+            if not res:
+                return prev_state
+            prev_state = state
+        return state
     
     def update_artifacts_state(self,collection,artifact_ids):
         for artifact_id in artifact_ids:
@@ -165,12 +165,16 @@ class ModelHandler(object):
             return True
         return False
     
-    def update_artifact_state(self,collection,artifact_id):
+    def update_model_state(self,collection,model):
         """For ease of use, each class has an explicit state attribute value.
             However, states can always be determined by the state_map"""
-        new_state = self.induce_artifact_state(collection,artifact_id)
-        self.update_artifacts_by_id(collection,[artifact_id],"state",new_state)
-        self.logger.info("Updated(%s) state for: %s to %s"%(collection,artifact_id,new_state))
+        new_state = self.induce_model_state(collection,model)
+        if new_state:
+            model.state = new_state
+            model.save()
+        else:
+            raise ModelStateNotFoundError
+        self.logger.info("Updated(%s) state for: %s to %s"%(collection,model,new_state))
         return True
     
         

@@ -21,3 +21,9 @@ class WrongFieldsExecption(Exception):
     """Raise if wrong fields are accessed in an object"""
     def __init__(self,message):
         raise self
+    
+class ModelStateNotFoundError(Exception):
+    """Raise if there is an error getting model state"""
+    def __init__(self,message):
+        raise self    
+    
