@@ -17,17 +17,18 @@ from django.db import models
 from apps.common.models import (AudioSource,
                                 MturkHit,
                                 CsaesrAssignment,
-                                ObjQueue)
+                                ObjQueue,
+                                StateModel)
 from djangotoolbox.fields import ListField, SetField
 
          
-class PromptSource(models.Model):
+class PromptSource(StateModel):
     """A file with a header and prompt on each line"""
     disk_space = models.IntegerField()
     uri = models.TextField()    
     prompt_count = models.IntegerField()  
      
-class ResourceManagementPrompt(models.Model):
+class ResourceManagementPrompt(StateModel):
     """Prompts from the Resource Management Corpus"""
     #Line number in the prompt source
     source = models.ForeignKey(PromptSource)
@@ -51,7 +52,7 @@ class ElicitationAssignment(CsaesrAssignment):
     recordings = SetField(models.ForeignKey(ElicitationAudioRecording))
     hit_id = models.ForeignKey(ElicitationHit)
     
-class Worker(models.Model):
+class Worker(StateModel):
     """The elicitation worker model.
         It was either have a different worker for elicitation and transcription
         or the same (common) worker and not know what assignments they submitted

@@ -15,7 +15,7 @@
 from django.db import models
 from django.contrib.contenttypes.generic import GenericForeignKey
 
-from apps.common.models import StaticFile, ObjQueue, MturkHit, CsaesrAssignment, AudioSource
+from apps.common.models import StaticFile, ObjQueue, MturkHit, CsaesrAssignment, AudioSource, StateModel
 from apps.normalization.models import NormalizedWords
 
 from djangotoolbox.fields import ListField, SetField
@@ -45,7 +45,7 @@ class TranscriptionHit(MturkHit):
     audio_clips = ListField(models.ForeignKey(AudioClip))
     
     
-class Transcription(models.Model):
+class Transcription(StateModel):
     """The generic transcription class"""
     word_count = models.IntegerField()
     normalized_words = models.ForeignKey(NormalizedWords)
@@ -60,7 +60,7 @@ class TranscriptionAssignment(CsaesrAssignment):
     transcriptions = SetField(models.ForeignKey(Transcription))
     hit_id = models.ForeignKey(TranscriptionHit)
     
-class Worker(models.Model):
+class Worker(StateModel):
     """The elicitation worker model.
         It was either have a different worker for elicitation and transcription
         or the same (common) worker and not know what assignments they submitted

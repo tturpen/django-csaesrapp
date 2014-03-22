@@ -30,7 +30,7 @@ class AudioSource(StaticFile):
 
     
 ###########          Queue models                  #################################################
-class ModelNode(models.Model):
+class ModelNode(StateModel):
     """ModelNode for our ModelQueue
     """
     member = GenericForeignKey()
@@ -39,7 +39,7 @@ class ModelNode(models.Model):
     processing = models.DateTimeField()
     
 
-class ObjQueue(models.Model):
+class ObjQueue(StateModel):
     """A queue of objects
         When the number of nodes reaches max_size, take them out
             and submit the HIT if so desired
@@ -55,7 +55,7 @@ class ObjQueue(models.Model):
             
     
 ###########          Hit models                  #################################################
-class MturkHit(models.Model):
+class MturkHit(StateModel):
     """Mturk hit"""
     hit_id = models.TextField()
     hit_type_id = models.TextField()
@@ -66,7 +66,7 @@ class MturkHit(models.Model):
 
 ###########          Assignment models                  #################################################
 
-class MturkAssignment(models.Model):
+class MturkAssignment(StateModel):
     """The generic assignment class
         Fields prefixed with amt cache their values from Amazon
         amt values should be static with respect to Amazon"""
@@ -84,7 +84,6 @@ class MturkAssignment(models.Model):
     
 class CsaesrAssignment(MturkAssignment):   
     """The specific Csaesr assignments for this app"""
-    state =  models.TextField()
     
     #Abstract base class
     class Meta:
