@@ -6,11 +6,14 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
-
+from apps.elicitation.pipelines import ElicitationPipeline
 
 class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+    def test_pipeline_load(self):
+        ep = ElicitationPipeline()
+        prompt_file_uri = "/home/taylor/workspace_csaesrengine/csaesrapp/resources/rm1partialprompts.snr"
+        #This takes a while
+        ep.load_PromptSource_RawToList(prompt_file_uri)
+        self.assertEquals(1,1)
+        
+    def test_pipeline_

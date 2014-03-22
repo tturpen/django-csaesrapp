@@ -1,4 +1,5 @@
 # Django settings for csaesrapp project.
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -109,15 +110,18 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    'django_nose',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
+    #'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Uncomment the next line to enable the admin:
      'django.contrib.admin',
-     'apps.admin'
+     'apps.admin',
+     'apps.elicitation',
+     'apps'
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )

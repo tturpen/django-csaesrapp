@@ -16,3 +16,8 @@ class TooManyEntries(Exception):
     """Raise if there is an incorrect number of entries"""
     def __init__(self,message):
         raise self
+    
+class WrongFieldsExecption(Exception):
+    """Raise if wrong fields are accessed in an object"""
+    def __init__(self,message):
+        raise self

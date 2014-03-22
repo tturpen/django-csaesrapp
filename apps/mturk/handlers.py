@@ -104,7 +104,7 @@ class HitHandler():
     DEFAULT_DURATION = 60*10
     DEFAULT_REWARD = 0.02
     DEFAULT_MAX_ASSIGNMENTS = 3
-    def __init__(self,connection,template_dir):
+    def __init__(self,connection):
         self.vocaroo_url = "https://vocaroo.com/?minimal"
         self.conn = connection
         self.templates = {}
@@ -119,18 +119,18 @@ class HitHandler():
                           "audio_id" : "${audio_id}",
                           "flash_url": "${flash_url}"}
         
-        #Transcription html templates
-        self.transcription_head = open(os.path.join(template_dir,"transcriptionhead.html")).read()
-        self.transcription_tail =  open(os.path.join(template_dir,"transcriptiontail.html")).read()
-        self.transcription_question = open(os.path.join(template_dir,"transcriptionquestion.html")).read()
-        
-        #Elicitation html templates
-        self.elicitation_head = open(os.path.join(template_dir,"nonflash_elicitationhead.html")).read()
-        self.elicitation_tail =  open(os.path.join(template_dir,"elicitationtail.html")).read()
-        self.elicitation_question = open(os.path.join(template_dir,"elicitationquestion.html")).read()
-        self.flash_xml = open(os.path.join(template_dir,"flashApplication.xml")).read()
-        self.templates["transcription"] = open(os.path.join(template_dir,"vanilla_transcription.html")).read()
-        
+#         #Transcription html templates
+#         self.transcription_head = open(os.path.join(template_dir,"transcriptionhead.html")).read()
+#         self.transcription_tail =  open(os.path.join(template_dir,"transcriptiontail.html")).read()
+#         self.transcription_question = open(os.path.join(template_dir,"transcriptionquestion.html")).read()
+#         
+#         #Elicitation html templates
+#         self.elicitation_head = open(os.path.join(template_dir,"nonflash_elicitationhead.html")).read()
+#         self.elicitation_tail =  open(os.path.join(template_dir,"elicitationtail.html")).read()
+#         self.elicitation_question = open(os.path.join(template_dir,"elicitationquestion.html")).read()
+#         self.flash_xml = open(os.path.join(template_dir,"flashApplication.xml")).read()
+#         self.templates["transcription"] = open(os.path.join(template_dir,"vanilla_transcription.html")).read()
+#         
         self.mic_selections = ["Laptop","Headset","Cellphone","Other"]
         
         self.disable_input_script = 'document.getElementById("${input_id}").disabled = true;'

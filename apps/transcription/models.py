@@ -59,3 +59,16 @@ class TranscriptionAssignment(CsaesrAssignment):
     """The specific transcription assignment class"""
     transcriptions = SetField(models.ForeignKey(Transcription))
     hit_id = models.ForeignKey(TranscriptionHit)
+    
+class Worker(models.Model):
+    """The elicitation worker model.
+        It was either have a different worker for elicitation and transcription
+        or the same (common) worker and not know what assignments they submitted
+        because each assignment and hit is different for transcription and elicitation.
+        TODO-tt: Figure out how to have a SetField(GenericForeignKey), that would fix this
+    """
+    worker_id = models.TextField()
+    approved_transcription_assignments = SetField(models.ForeignKey(TranscriptionAssignment))
+    denied_transcription_assignments = SetField(models.ForeignKey(TranscriptionAssignment))
+    submitted_transcription_assignments = SetField(models.ForeignKey(TranscriptionAssignment))
+    

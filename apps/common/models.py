@@ -3,17 +3,13 @@ from django.utils import timezone
 from django.contrib.contenttypes.generic import GenericForeignKey
 from djangotoolbox.fields import ListField, SetField
 
-###########          General models                  #################################################
-class Worker(models.Model):
-    """The generic mturk worker model"""
-    #This can be any type of assignment
-    worker_id = models.TextField()
-    approved_assignments = SetField(GenericForeignKey)
-    denied_assignments = SetField(GenericForeignKey)
-    submitted_assignments = SetField(GenericForeignKey)
+class StateModel(models.Model):
+    state = models.TextField()
+    class Meta:
+        abstract = True
     
-    
-class StaticFile(models.Model):
+###########          General models                  ################################################# 
+class StaticFile(StateModel):
     """Any models of static files should inherit from this."""
     disk_space = models.IntegerField()
     uri = models.TextField()    
@@ -32,25 +28,6 @@ class AudioSource(StaticFile):
     class Meta:
         abstract = True
 
-         
-class PromptSource(StaticFile):
-    """A file with a header and prompt on each line"""
-    num_prompts = models.IntegerField()   
-    
-class WordPrompt(models.Model):
-    """Generic prompt model"""
-    source = models.ForeignKey(PromptSource)
-    #Line number in the prompt source
-    line_number = models.IntegerField()
-    word_count = models.IntegerField()
-    normalized_words = ListField(models.TextField())
-    words = ListField(models.TextField())
-    raw_text = models.TextField()
-    
-    #Abstract base class
-    class Meta:
-        abstract = True
-        
     
 ###########          Queue models                  #################################################
 class ModelNode(models.Model):
@@ -69,6 +46,8 @@ class ObjQueue(models.Model):
     """    
     max_size = models.IntegerField()
     queue = ListField(models.ForeignKey(ModelNode))
+    def enqueue(self,model_node):
+        self.queue += models.ForeignKey(model_node)
     
     #Abstract base class
     class Meta:
@@ -110,4 +89,13 @@ class CsaesrAssignment(MturkAssignment):
     #Abstract base class
     class Meta:
         abstract = True
+        
+# class Worker(models.Model):
+#     """The generic mturk worker model"""
+#     #This can be any type of assignment
+#     worker_id = models.TextField()
+#     approved_assignments = SetField(models.ForeignKey(CsaesrAssignment))
+# #     approved_assignments = ListField(GenericForeignKey('content_type','object_id'))
+# #     denied_assignments = ListField(GenericForeignKey('content_type','object_id'))
+# #     submitted_assignments = ListField(GenericForeignKey('content_type','object_id'))
     
