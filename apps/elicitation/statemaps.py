@@ -65,11 +65,8 @@ class RecordingSource(Comparisons):
             
 class Prompt(Comparisons):
     def __init__(self):
-        self.map = ["Newtest","Queued","Hit","Recorded"]
+        self.map = ["Queued","Hit","Recorded"]
         
-    def Newtest(self,model):
-        return self.greater_than_zero("words",model)
-    
     def Queued(self,model):
         return self.greater_than_zero("inqueue", model)
         
