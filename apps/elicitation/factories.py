@@ -9,10 +9,11 @@ class ElicitationModelFactory(ModelFactory):
     def create_elicitation_hit_model(self,hit_id,hit_type_id,prompt_ids):        
         if type(prompt_ids) != list:
             raise IOError
+        search = {"hit_id":hit_id}
         document =  {"hit_id":hit_id,
                      "hit_type_id": hit_type_id,
                      "prompts" : prompt_ids}
-        return self.create_model("elicitation_hits",document)
+        return self.create_model("hits",search,document)
     
     def create_word_prompt_model(self,source, words, normalized_words,line_number,rm_prompt_id,word_count):
         """A -1 endtime means to the end of the clip."""

@@ -13,14 +13,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
+from collections import defaultdict
 
 from apps.common.models import (AudioSource,
                                 MturkHit,
                                 CsaesrAssignment,
-                                ObjQueue,
                                 StateModel)
 from djangotoolbox.fields import ListField, SetField
-
+from django.utils import timezone
          
 class PromptSource(StateModel):
     """A file with a header and prompt on each line"""
@@ -31,12 +31,15 @@ class PromptSource(StateModel):
 class ResourceManagementPrompt(StateModel):
     """Prompts from the Resource Management Corpus"""
     #Line number in the prompt source
+    hit_id = models.TextField()
     source = models.ForeignKey(PromptSource)
+    inqueue = models.TextField()
     line_number = models.IntegerField()
     rm_prompt_id = models.TextField()
     word_count = models.IntegerField()
     words = ListField(models.TextField())
     normalized_words = ListField(models.TextField())
+    
     
 class ElicitationAudioRecording(AudioSource):
     """Downloaded from Vocaroo given a submitted assignment
@@ -65,7 +68,68 @@ class Worker(StateModel):
     submitted_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
     blocked_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
     
+    
+###########          Queue models                  #################################################
+class Node(StateModel):
+    """ModelNode for our ModelQueue
+    """
+    #TODO-tt Figure out how genericforeignkeys work...
+    member = models.ForeignKey(ResourceManagementPrompt)
+    priority = models.IntegerField()
+    #Asynchronous processing of nodes just in case
+    processing = models.DateTimeField(null=True)
+    
+
+class ObjQueue(StateModel):
+    """A queue of objects
+        When the number of nodes reaches max_size, take them out
+            and submit the HIT if so desired        
+    """    
+    max_size = models.IntegerField()
+    queue = ListField(models.ForeignKey(Node))
+
+    def enqueue(self,model_node):
+        #self.queue.append(models.ForeignKey(model_node.pk))
+        self.queue.append(model_node.pk)
         
+    def dequeue(self,model_node):
+        for node in self.queue:
+            #Derefernce the node pk to ResourceManagementPrompt
+            if Node.objects.get(pk=node).member == model_node:
+                self.queue.remove(node)
+    
+    def inqueue(self,prompt):
+        for node_id in self.queue:
+            if node_id == prompt.pk:
+                return True
+        return False
+    
+    def get_current_queue(self):
+        """Get all the ModelNodes waiting in the queue and not being processed
+            Find the largest queue that is full
+            Update the queue and return the clips"""         
+        response = []
+        for node in self.queue:
+            node_obj = Node.objects.get(pk=node)
+            node_obj.processing = timezone.now()
+            node_obj.save()
+            response.append(node_obj.member)
+            if len(response) == self.max_size:
+                return response
+                     
+    def revive_queue(self,revive_time):
+        """If an audio clip in the queue has been processing for more than
+            queue_revive_time seconds, free the clip by resetting processing"""
+        for node in self.queue:
+            processing = Node.objects.get(pk=node).processing
+            if processing and timezone.now().replace(tzinfo=None) - processing > timezone.timedelta(revive_time):
+                node.processing = None
+                node.save()
+    
+    #Abstract base class
+    class Meta:
+        abstract = True    
+            
 class PromptQueue(ObjQueue):
     """A queue of prompts"""
     name = models.TextField("Prompts")
