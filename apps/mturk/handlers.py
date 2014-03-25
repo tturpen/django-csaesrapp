@@ -15,6 +15,8 @@ from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion, QuestionForm, Overview, HTMLQuestion, QuestionContent, FormattedContent, FreeTextAnswer, AnswerSpecification, Question, Flash, SelectionAnswer
 from apps.mturk.exceptions import IncorrectTextFieldCount
 
+from django.template import RequestContext, loader, Context
+
 import os
 import logging
 
@@ -144,12 +146,15 @@ class HitHandler():
     def get_HIT(self,hit_id,response_groups=None):
         return self.conn.get_hit(hit_id, response_groups)
     
-    def estimate_html_HIT_cost(self,audio_clip_urls,reward_per_clip,
+    def estimate_html_HIT_cost(self,prompts,reward_per_clip,
                                max_assignments):
-        return reward_per_clip * len(audio_clip_urls) * max_assignments
+        return reward_per_clip * len(prompts) * max_assignments
     
-    def make_html_elicitation_HIT(self,prompt_list,hit_title,prompt_title,keywords,
-                                  duration=DEFAULT_DURATION,reward_per_clip=DEFAULT_REWARD,max_assignments=DEFAULT_MAX_ASSIGNMENTS):
+    def make_html_elicitation_HIT(self,prompt_pairs,hit_title,prompt_title,keywords,
+                                  hit_description,
+                                  duration=DEFAULT_DURATION,
+                                  reward_per_clip=DEFAULT_REWARD,
+                                  max_assignments=DEFAULT_MAX_ASSIGNMENTS):
         overview = Overview()
         overview.append_field("Title", "Record yourself speaking the words in the prompt.")
         descriptions = ["The following prompts are in English.",
@@ -159,54 +164,31 @@ class HitHandler():
                         "You will NEVER be asked to divulge any personal or identifying information."
                         ]
         keywords = "audio, recording, elicitation, English"
+        template = loader.get_template('common/csaesrhit.html')
+#         context = RequestContext(request, {
+#                                        'latest_poll_list': this_years_polls
+#                                        })
+#         #return HttpResponse(template.render(context))
+#         html = render(request,'polls/index.html',context)
+        prompt_ids = [prompt[0] for prompt in prompt_pairs]
+        prompt_ids_words = [(prompt[0]," ".join(prompt[1]),"_".join(prompt[1])) for prompt in prompt_pairs]
         
-        html_head = self.elicitation_head.replace(self.html_tags["title"],hit_title)
-        for description in descriptions:            
-            html_head = html_head.replace(self.html_tags["description"],
-                                          "<li>"+description+"</li>\n"+self.html_tags["description"])    
-        questions_html = []
-        prompt_ids = []
+        context = Context({"descriptions": descriptions,
+                   "prompt_ids" : prompt_ids,
+                   "prompt_pairs": prompt_ids_words,
+                   })
         
-        for prompt_words,prompt_id in prompt_list:
-            #For each prompt, generate the question html given the template
-            prompt_id = str(prompt_id) 
-            prompt = " ".join(prompt_words)
-            underscored_prompt = "_".join(prompt_words)
-            question = self.elicitation_question.replace(self.html_tags["prompt"],prompt)
-            question = question.replace(self.html_tags["underscored_prompt"],underscored_prompt)
-            question = question.replace(self.html_tags["prompt_id"],str(prompt_id))
-            questions_html.append(question)
-            prompt_ids.append(prompt_id)
-            
-        for prompt_id in prompt_ids:
-            #Disable the inputs for the prompts, which are just text fields for the 
-            #audio recording URLs
-            script = self.disable_input_script.replace("${input_id}",prompt_id)
-            html_head = html_head.replace(self.html_tags["disable_script"],script+\
-                                          "\n"+self.html_tags["disable_script"])
-            if(self.html_tags["prompt_id"]) in html_head:
-                html_head = html_head.replace(self.html_tags["prompt_id"],"'"+prompt_id+"'"+\
-                                              ","+self.html_tags["prompt_id"])
-        #Get rid of html tags
-        html_head = html_head.replace(self.html_tags["disable_script"],"")
-        html_head = html_head.replace(","+self.html_tags["prompt_id"],"")
-        html_head = html_head.replace(self.html_tags["description"],"")
-        html = html_head
-
-        for question in questions_html:        
-            html += question
-        
-        html += self.transcription_tail
+        html = template.render(context)
         html_question = HTMLQuestion(html,800)
         open("/home/taylor/csaesr/tmp/hithtml.html","w").write(html)
         
         #reward calculation
-        reward = reward_per_clip*len(prompt_list)
+        reward = reward_per_clip*len(prompt_pairs)
         try:
             return self.conn.create_hit(title=hit_title,
                                     question=html_question,
                                     max_assignments=max_assignments,
-                                    description=description,
+                                    description=hit_description,
                                     keywords=keywords,
                                     duration = duration,
                                     reward = reward)
