@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.contenttypes.generic import GenericForeignKey
+from django.contrib.contenttypes import generic
 from djangotoolbox.fields import ListField, SetField
 
 class StateModel(models.Model):
@@ -27,32 +27,7 @@ class AudioSource(StaticFile):
     #Abstract base class
     class Meta:
         abstract = True
-
-    
-###########          Queue models                  #################################################
-class ModelNode(StateModel):
-    """ModelNode for our ModelQueue
-    """
-    member = GenericForeignKey()
-    priority = models.IntegerField()
-    #Asynchronous processing of nodes just in case
-    processing = models.DateTimeField()
-    
-
-class ObjQueue(StateModel):
-    """A queue of objects
-        When the number of nodes reaches max_size, take them out
-            and submit the HIT if so desired
-    """    
-    max_size = models.IntegerField()
-    queue = ListField(models.ForeignKey(ModelNode))
-    def enqueue(self,model_node):
-        self.queue += models.ForeignKey(model_node)
-    
-    #Abstract base class
-    class Meta:
-        abstract = True    
-            
+          
     
 ###########          Hit models                  #################################################
 class MturkHit(StateModel):

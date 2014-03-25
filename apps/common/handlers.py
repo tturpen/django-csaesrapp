@@ -43,7 +43,8 @@ class ModelHandler(object):
 #         return self.get_artifact(collection,{"_id":art_id},field,refine)
     
     def get_models_by_state(self,collection,state,field=None,refine={}):
-        return self.c[collection].find({"state":state})
+        search = {"state":state}
+        return self.c[collection].objects.filter(**search)
     
     def get_models(self,collection,param,values,field=None,refine={}):
         return [self.get_artifact(collection,{param:val},field,refine) for val in values]
@@ -83,15 +84,6 @@ class ModelHandler(object):
                     self.logger.info("Audio clip(%s) already in HIT(%s)"(pair[1],hit["_id"]))
         return prompts_in_hits
     
-    def revive_queue(self,queue_name):
-        """If an audio clip in the queue has been processing for more than
-            queue_revive_time seconds, free the clip by resetting processing"""
-        non_none = self.c[queue_name].find({"processing": {"$ne" : None}})
-        for artifact in non_none:
-            if  timezone.now() - artifact["processing"] > self.queue_revive_time:
-                self.c[queue_name].update({"_id":artifact["_id"]}, {"$set" : {"processing" : None}})  
-        self.logger.info("Finished reviving database(%s) queue."%self.db_name)
-        
 #     def init_artifact_set(self,collection,artifact_id,field,values):
 #         if not self.get_artifact_by_id(collection, artifact_id, field):
 #             if ObjectId.is_valid(artifact_id):
@@ -107,20 +99,22 @@ class ModelHandler(object):
     def remove_artifacts_by_id(self,collection,artifact_ids):
         """Given a list of artifacts, remove each one by _id"""
         for artifact_id in artifact_ids:
-            self.c[collection].remove({"_id":artifact_id})
-         
-    def update_artifact_with_document(self,collection,artifact_id,document):   
-        """Given a list of artifact ids, update each one's field to value"""
-        self.c[collection].update({"_id":artifact_id}, document)
+            self.c[collection].remove({"_id":artifact_id})         
                     
     def update_model(self,collection,model,field=None,value=None,document=None):
         if document:
-            pass
+            #Just for structure, we deref document below
+            pass                                
         elif field and value:
             document = {field: value}
         else:
             raise WrongFieldsExecption
         self.c[collection].objects.filter(pk=model.pk).update(**document)
+        self.update_model_state(collection, model)
+        
+    def update_models(self,collection,models,field=None,value=None,document=None):
+        for model in models:
+            self.update_model(collection,model,field,value,document)
                 
 #     def update_artifacts_by_id(self,collection,artifact_ids,field,value,document=None):
 #         """Given a list of artifact ids, update each one's field to value"""
@@ -212,38 +206,5 @@ class ModelHandler(object):
     def get_prompt_pairs(self,prompt_queue):
         """Given the queue entries, return the id and text for the prompt
         """
-        return [(self.get_artifact("prompts",{"_id":w["prompt_id"]},field="normalized_words"),w["prompt_id"]) for w in prompt_queue]
-               
-    def enqueue_prompt(self,prompt_id,priority=1,max_queue_size=3):
-        """Queue the audio prompt."""        
-        self.c["prompt_queue"].update({"prompt_id": prompt_id},
-                             {"prompt_id": prompt_id,
-                              "priority": priority,
-                              "max_size": max_queue_size,
-                              "processing" : None,
-                              },
-                             upsert = True)
-        self.update_artifacts_by_id("prompts", [prompt_id], "inqueue", "prompt_queue")
-        self.logger.info("Queued prompt: %s "%prompt_id)
-        
-    def get_queue(self,qname):
-        """Get all the ModelNodes waiting in the queue and not being processed
-            Find the largest queue that is full
-            Update the queue and return the clips"""         
-        self.revive_queue(qname)
-        queue = self.c[qname].objects.filter({"processing":None}).limit(self.MAX_QUEUE_VIEW)
-        max_sizes = defaultdict(list)
-        for prompt in queue:
-            #For all the prompts
-            priority = prompt["priority"]
-            processing = prompt["processing"]
-            max_size = int(prompt["max_size"])
-            max_sizes[max_size].append(prompt)
-        #Get the largest full queue
-        max_q = self.get_max_queue(max_sizes)        
-        for clip in max_q:
-            t = timezone()
-            self.c[qname].find_and_modify(query = {"_id":clip["_id"]},
-                                                 update = { "$set" : {"processing":t}})
-        return max_q        
+        return [(prompt.pk,prompt.normalized_words) for prompt in prompt_queue]
 
