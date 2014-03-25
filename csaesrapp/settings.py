@@ -13,6 +13,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
+        'TEST_NAME': 'cseasr_app_test_db',
         'NAME' : 'csaesrapp_test'
     }
 }
@@ -107,6 +108,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    
 )
 
 INSTALLED_APPS = (
@@ -121,7 +123,8 @@ INSTALLED_APPS = (
      'django.contrib.admin',
      'apps.admin',
      'apps.elicitation',
-     'apps'
+     'apps.common',
+     'apps',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
