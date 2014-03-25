@@ -23,9 +23,9 @@ class ElicitationStateMap(object):
     def __init__(self):
         self.state_map = {"prompt_sources": [PromptSource,PromptSource().map],
                       "prompts": [Prompt,Prompt().map],
-                      "elicitation_hits": [ElicitationHit,ElicitationHit().map],
+                      "hits": [ElicitationHit,ElicitationHit().map],
                       "recording_sources" : [RecordingSource, RecordingSource().map],
-                      "elicitation_assignments" : [ElicitationAssignment,ElicitationAssignment().map],
+                      "assignments" : [ElicitationAssignment,ElicitationAssignment().map],
                       "workers" : [Worker, Worker().map]
                       }
              
