@@ -12,7 +12,6 @@ import os
 class SimpleTest(TestCase):
     def setUp(self):
         self.ep = ElicitationPipeline()
-        os.environ["REUSE_DB"] = "1"
         
     def test_pipeline_enqueue_and_hit(self):
 #        self.ep.enqueue_prompts_and_generate_hits()

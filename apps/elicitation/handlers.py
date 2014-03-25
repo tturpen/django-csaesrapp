@@ -77,7 +77,7 @@ class ElicitationModelHandler(ModelHandler):
                     return prompts_in_hits
         return prompts_in_hits
         
-    def remove_models_from_queue(self,qname,prompt_queue):
+    def remove_models_from_queue(self,prompt_queue,qname="queue"):
         for prompt in prompt_queue:
             self.c[qname].dequeue(prompt)
         

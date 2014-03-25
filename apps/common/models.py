@@ -3,6 +3,12 @@ from django.utils import timezone
 from django.contrib.contenttypes import generic
 from djangotoolbox.fields import ListField, SetField
 
+from apps.common.forms import StringListField
+
+class CseasrListField(ListField):
+    def formfield(self,**kwargs):
+        return models.Field.formfield(self, StringListField, **kwargs)
+    
 class StateModel(models.Model):
     state = models.TextField()
     class Meta:

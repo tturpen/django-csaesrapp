@@ -1,4 +1,5 @@
 # Django settings for csaesrapp project.
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DEBUG = True

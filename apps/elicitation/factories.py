@@ -27,7 +27,7 @@ class ElicitationModelFactory(ModelFactory):
                     "words" : words,
                     "normalized_words": normalized_words,
                     "word_count": word_count}
-        art_id = self.create_model("prompts", search, document)
+        art_id = self.create_model("prompts", search, document,update=False)
         return art_id
     
     def create_prompt_source_model(self,prompt_file_uri, disk_space, prompt_count):

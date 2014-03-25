@@ -109,7 +109,9 @@ class ModelHandler(object):
             document = {field: value}
         else:
             raise WrongFieldsExecption
-        self.c[collection].objects.filter(pk=model.pk).update(**document)
+        model.__dict__.update(document)
+        #self.c[collection].objects.filter(pk=model.pk).update(**document)
+        #saves
         self.update_model_state(collection, model)
         
     def update_models(self,collection,models,field=None,value=None,document=None):

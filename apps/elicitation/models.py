@@ -18,7 +18,9 @@ from collections import defaultdict
 from apps.common.models import (AudioSource,
                                 MturkHit,
                                 CsaesrAssignment,
-                                StateModel)
+                                StateModel,
+                                CseasrListField,)
+#from apps.elicitation.pipelines.ElicitationPipeline import load_PromptSource_RawToList
 from djangotoolbox.fields import ListField, SetField
 from django.utils import timezone
          
@@ -37,9 +39,9 @@ class ResourceManagementPrompt(StateModel):
     line_number = models.IntegerField()
     rm_prompt_id = models.TextField()
     word_count = models.IntegerField()
-    words = ListField(models.TextField())
-    normalized_words = ListField(models.TextField())
-    
+    words = CseasrListField(models.TextField())
+    normalized_words = CseasrListField(models.TextField())
+        
     
 class ElicitationAudioRecording(AudioSource):
     """Downloaded from Vocaroo given a submitted assignment
@@ -48,7 +50,8 @@ class ElicitationAudioRecording(AudioSource):
     
 class ElicitationHit(MturkHit):
     """The specific elicitation Hit class"""
-    prompts = ListField(models.ForeignKey(ResourceManagementPrompt))
+    #prompts = CseasrListField(models.ForeignKey(ResourceManagementPrompt))
+    prompts = CseasrListField()
     
 class ElicitationAssignment(CsaesrAssignment):
     """The specific elicitation assignment class"""
@@ -86,7 +89,7 @@ class ObjQueue(StateModel):
             and submit the HIT if so desired        
     """    
     max_size = models.IntegerField()
-    queue = ListField(models.ForeignKey(Node))
+    queue = CseasrListField()
 
     def enqueue(self,model_node):
         #self.queue.append(models.ForeignKey(model_node.pk))
