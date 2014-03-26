@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Minimal Django File Upload Example</title>   
+    </head>
+    <body>
+    <!-- List of uploaded documents -->
+    {% if promptsources %}
+        <ul>
+        {% for promptsource in promptsources %}
+            <li> {{ promptsource.uri }}</li> 
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No documents.</p>
+    {% endif %}
+         <!-- Upload form. Note enctype attribute! --> 
+        <form action="{% url 'admin:apps.elicitation.views.pslist' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>{{ form.non_field_errors }}</p>
+            <p>{{ form.sourcefile.label_tag }} {{ form.sourcefile.help_text }}</p>
+            <p>
+                {{ form.sourcefile.errors }}
+                SourceFile: {{ form.sourcefile }}
+                Title: {{ form.title }}
+            </p>            
+            <p><input type="submit" name="submit" value="Upload" /></p>
+        </form>
+    </body>
+</html> 

@@ -26,6 +26,7 @@ from django.utils import timezone
          
 class PromptSource(StateModel):
     """A file with a header and prompt on each line"""
+    sourcefile = models.FileField(upload_to='documents/%Y/%m/%d')
     disk_space = models.IntegerField()
     uri = models.TextField()    
     prompt_count = models.IntegerField()  
