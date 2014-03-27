@@ -26,4 +26,8 @@ class ModelStateNotFoundError(Exception):
     """Raise if there is an error getting model state"""
     def __init__(self,message):
         raise self    
-    
+
+class DuplicateSentenceIds(Exception):
+    """Raise if duplicate sentence ids in line based adapters"""
+    def __init__(self,message):
+        raise self    

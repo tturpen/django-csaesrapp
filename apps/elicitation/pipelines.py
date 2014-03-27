@@ -19,6 +19,8 @@ from boto.mturk.connection import ResultSet
 from apps.common.pipelines import MturkPipeline
 from apps.elicitation.handlers import ElicitationModelHandler, PromptHandler
 from apps.elicitation.factories import ElicitationModelFactory
+from apps.elicitation.adapters import ResourceManagementAdapter
+
 from apps.filtering.handlers import StandardFilterHandler
 # from apps.elicitation.models import (ResourceManagementPrompt, 
 #                                     ElicitationAudioRecording,
@@ -32,13 +34,13 @@ class ElicitationPipeline(MturkPipeline):
         MturkPipeline.__init__(self)
         self.mh = ElicitationModelHandler()
         self.mf = ElicitationModelFactory()
-        self.ph = PromptHandler()
+        self.rma = ResourceManagementAdapter()
         self.filter = StandardFilterHandler(self.mh)
         self.logger = logging.getLogger("csaesr_app.elicitation_pipeline_handler")
                 
     def load_PromptSource_RawToList(self,prompt_file_uri):
         """Create the prompt artifacts from the source."""        
-        prompt_dict = self.ph.get_prompts(prompt_file_uri)        
+        prompt_dict = self.rma.get_id_dict(prompt_file_uri)    
         disk_space = os.stat(prompt_file_uri).st_size
         source_model = self.mf.create_prompt_source_model(prompt_file_uri, disk_space, len(prompt_dict))
         for key in prompt_dict:

@@ -13,13 +13,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from apps.common.adapters import LineBasedAdapter
 
+class ResourceManagementAdapter(LineBasedAdapter):
+    def __init__(self):
+        header = ""
+        delim = " "
+        comment = ";"        
+        LineBasedAdapter.__init__(self,header,delim,comment,-1)
+        self.id_proc = self.strip_parens
+        
+    def strip_parens(self,word):
+        return word.strip().lstrip("(").strip(")")
+
+        
 class CMUPronunciationAdapter(LineBasedAdapter):
     """An adapter for the CMU Pronunciation dictionary"""
     def __init__(self):
         header = ""
         delim = " "
         comment = ";;;;"
-        LineBasedAdapter.__init__(self, header, delim, comment)
+        LineBasedAdapter.__init__(self, header, delim, comment,0)
         self.constraints.extend([(False,self.endswith,"(1)"),
                                  (False,self.endswith,"(2)"),
                                  (False,self.endswith,"(3)"),
