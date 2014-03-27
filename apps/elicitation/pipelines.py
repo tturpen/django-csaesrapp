@@ -35,12 +35,6 @@ class ElicitationPipeline(MturkPipeline):
         self.ph = PromptHandler()
         self.filter = StandardFilterHandler(self.mh)
         self.logger = logging.getLogger("csaesr_app.elicitation_pipeline_handler")
-
-    @staticmethod
-    def handle_uploaded_file(f):
-        with open('some/file/name.txt', 'wb+') as destination:
-            for chunk in f.chunks():
-                destination.write(chunk)
                 
     def load_PromptSource_RawToList(self,prompt_file_uri):
         """Create the prompt artifacts from the source."""        
