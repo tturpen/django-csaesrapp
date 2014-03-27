@@ -17,7 +17,21 @@ class LineBasedAdapter(object):
         self.header = header
         self.delim = delim
         self.comment = comment
+        #constraint: expected return, function, value 
+        self.constraints = [(False,self.startswith,self.comment)]
         
+    def startswith(self,line,value):
+        return line.startswith(value)
+    
+    def endswith(self,line,value):
+        return line.startswith(value)
+    
+    def meets_constraints(self,line):
+        for expected, func, value in self.constraints:
+            if not func(value) == expected:
+                return False
+        return True
+            
     def get_id_dict(self,lines,id_index=None):
         """Given the index of the indicator
             build a dictionary of that indicator given lines.
@@ -25,12 +39,12 @@ class LineBasedAdapter(object):
         d = {}
         if id_index:
             for line in lines:
-                if not line.startswith(self.comment):
+                if self.meets_constraints(line):
                     pieces = lines.split(self.delim)
                     d[pieces[id_index]] = pieces[:id_index]+pieces[id_index:]
         else:
             for i, line in enumerate(lines):
-                if not line.startswith(self.comment):
+                if self.meets_constraints(line):
                     pieces = lines.split(self.delim)
                     d[i] = line
         return d
