@@ -1,6 +1,11 @@
 from django.contrib import admin
 from apps.elicitation.models import ResourceManagementPrompt, PromptSource
 from apps.elicitation.forms import PromptSourceForm, UploadFileForm
+from apps.elicitation import views
+from apps.elicitation.pipelines import ElicitationPipeline
+from apps.elicitation.handlers import ElicitationModelHandler
+#from apps.transcription.pipelines import TranscriptionPipeline
+
 
 from django.contrib import admin
 from django.template import RequestContext
@@ -11,21 +16,24 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
+from django.shortcuts import get_object_or_404
 
-from apps.elicitation import views
-#from apps.elicitation.pipelines import ElicitationPipeline
-#from apps.transcription.pipelines import TranscriptionPipeline
+import os
 
 class PromptInline(admin.TabularInline):
     model = ResourceManagementPrompt
 
     
 class ElicitationAdmin(admin.ModelAdmin):
-#     def __init__(self):
-#         #self.elicitation_pipeline_handler = ElicitationPipeline()
-#         #self.transcription_pipeline_handler = TranscriptionPipeline()
-#         pass
-    promptsource_template = "elicitation:elicitation/promptsource.html"
+    pipeline = ElicitationPipeline()
+    
+    fieldsets = [
+                 (None, {'fields' : ['sourcefile']}),
+                 ('Source File Information', {'fields': ['uri'], 'classes': ['collapse']})
+                 ]
+    list_display = ["sourcefile","uri","disk_space","state"]
+        #self.transcription_pipeline_handler = TranscriptionPipeline()        
+        #promptsource_template = "elicitation:elicitation/promptsource.html"
 
 # CUSTOMIZE ADMIN URLS HERE    
     def get_urls(self):
@@ -33,34 +41,35 @@ class ElicitationAdmin(admin.ModelAdmin):
         my_urls = patterns('',                           
                            #url(r'^add/$',self.admin_site.admin_view(self.upload_file))                           
                            #url(r'^add/$',self.admin_site.admin_view(self.list))
-                           url(r'^add/$',views.pslist)
+                           url(r'^add/$',views.pslist),
+                           url(r'^promptsource/$',views.IndexView),
+                           url(r'^(?P<pk>\w+)/load/$',self.load_promptsource),
                            #url(r'^add/$',views.upload_file),                           
                            #(r'^(?P<pk>\w+)/$', self.admin_site.admin_view(self.review)))
                            )
         return my_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        return super(ElicitationAdmin,self).changelist_view(request,extra_context)
     
-    def upload_file(self,request,args=None,kwargs=None):
-        print "HERE"
-        if request.method == 'POST':
-            form = UploadFileForm(request.POST, request.FILES)
-            if form.is_valid():
-                instance = PromptSourceForm(docfile=request.Files['file'])
-                instance.save()
-                return HttpResponseRedirect('/admin/')
+    def load_promptsource(self,*args,**kwargs):
+        if "pk" in kwargs:
+            pk = str(kwargs["pk"])
         else:
-            form = UploadFileForm()
-        context = {"promptsources" : PromptSource.objects.all(),
-                   'form': form}
-        #return HttpResponseRedirect(reverse('polls:results', args=(p.id,)))    
-        return render_to_response('elicitation/upload_promptsource.html', context,context_instance=RequestContext(request))
-        #return render(request,'upload.html', {'form': form})
-#         
-#     def review(self, request, pk):
-#         source = PromptSource.objects.get(pk=pk)
-#         return render_to_response(self.promptsource_template,{
-#                                                               'title': 'Review prompt source %s' % source.uri,
-#                                                               'prompt_source' : source})
+            #Todo delete the model if load fails
+            return HttpResponseRedirect('/admin/elicitation/promptsource/%s/loadfail/'%pk)
         
+        try:
+            ps = get_object_or_404(PromptSource,pk=pk)
+            self.pipeline.load_PromptSource_RawToList(ps)
+            #dont circumvent the model handler
+            #admin should only have access to the pipeline eos
+        except Exception:            
+            raise
+            return HttpResponseRedirect('/admin/elicitation/promptsource/%s/loadfail/'%pk)
+            
+        return HttpResponseRedirect('/admin/elicitation/promptsource/')
+            
 
     def get_form(self, request, obj=None, **kwargs):
         # Proper kwargs are form, fields, exclude, formfield_callback

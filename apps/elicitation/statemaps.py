@@ -34,7 +34,13 @@ class Comparisons(object):
         self.map = []
         
     def greater_than_zero(self,parameter,model):
-        return hasattr(model,parameter) and len(getattr(model,parameter)) > 0
+        if hasattr(model,parameter):
+            attribute = getattr(model,parameter)
+            if type(attribute) == list:
+                return len(attribute) > 0
+            elif type(attribute) == int:
+                return attribute > 0   
+        return False     
     
     def equal_to_zero(self,parameter,model):
         return hasattr(model,parameter) and len(getattr(model,parameter)) == 0
@@ -52,7 +58,7 @@ class PromptSource(Comparisons):
         self.map = ["Listed"]
         
     def Listed(self,model):
-        return self.greater_than_zero("prompt_list", model)
+        return self.greater_than_zero("prompt_count", model)
     
     
 class RecordingSource(Comparisons):

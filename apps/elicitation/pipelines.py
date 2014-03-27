@@ -38,15 +38,23 @@ class ElicitationPipeline(MturkPipeline):
         self.filter = StandardFilterHandler(self.mh)
         self.logger = logging.getLogger("csaesr_app.elicitation_pipeline_handler")
                 
-    def load_PromptSource_RawToList(self,prompt_file_uri):
+    def load_PromptSource_RawToList(self,source_model):
         """Create the prompt artifacts from the source."""        
-        prompt_dict = self.rma.get_id_dict(prompt_file_uri)    
-        disk_space = os.stat(prompt_file_uri).st_size
-        source_model = self.mf.create_prompt_source_model(prompt_file_uri, disk_space, len(prompt_dict))
+        sourcefile = source_model.sourcefile
+        uri = str(sourcefile)
+        size = os.stat(uri).st_size   
+        source_model.uri = uri
+        source_model.disk_space = size
+        
+        lines = open(uri).readlines()        
+        prompt_dict = self.rma.get_id_dict(lines)    
         for key in prompt_dict:
             prompt, line_number = prompt_dict[key]
             normalized_prompt =  self.normalizer.rm_prompt_normalization(prompt)
-            self.mf.create_word_prompt_model(source_model, prompt, normalized_prompt, line_number, key, len(prompt))       
+            self.mf.create_word_prompt_model(source_model, prompt, normalized_prompt, line_number, key, len(prompt))
+        source_model.prompt_count = len(prompt_dict)
+        source_model.save()
+        self.mh.update_model_state("prompt_sources", source_model)  
  
     def enqueue_prompts_and_generate_hits(self):
         prompts = self.mh.get_models_by_state("prompts", "New")

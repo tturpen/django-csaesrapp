@@ -45,12 +45,15 @@ def pslist(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             #newsource = PromptSourceForm(sourcefile = request.FILES['sourcefile'])
-            ps = PromptSource(sourcefile=request.FILES['sourcefile'],disk_space=5,uri="mock_path",
-                              prompt_count=5)
+            ps = PromptSource(sourcefile=request.FILES['sourcefile'],
+                              disk_space=-1,
+                              uri="-1",
+                              prompt_count=-1)
             ps.save()
             # Redirect to the document list after POST
             #return HttpResponseRedirect(reverse('admin:apps.elicitation.views.pslist'))
-            return HttpResponseRedirect(reverse('admin:index'))
+            #return HttpResponseRedirect(reverse('admin:index',kwargs={}))
+            return HttpResponseRedirect('/admin/elicitation/promptsource/%s/load/'%ps.pk)
 
     else:
         form = UploadFileForm() # A empty, unbound form
