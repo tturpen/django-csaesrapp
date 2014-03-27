@@ -15,7 +15,10 @@ from apps.common.adapters import LineBasedAdapter
 
 class CMUPronunciationAdapter(LineBasedAdapter):
     """An adapter for the CMU Pronunciation dictionary"""
-    def __init__(self,header,delim,comment):
+    def __init__(self):
+        header = ""
+        delim = " "
+        comment = ";;;;"
         LineBasedAdapter.__init__(self, header, delim, comment)
         self.constraints.extend([(False,self.endswith,"(1)"),
                                  (False,self.endswith,"(2)"),
