@@ -11,6 +11,7 @@ class CseasrListField(ListField):
     
 class StateModel(models.Model):
     state = models.TextField()
+        
     class Meta:
         abstract = True
     

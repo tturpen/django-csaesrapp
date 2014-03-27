@@ -31,3 +31,8 @@ class DuplicateSentenceIds(Exception):
     """Raise if duplicate sentence ids in line based adapters"""
     def __init__(self,message):
         raise self    
+    
+class WrongPromptIdIndex(Exception):
+    """Raise if adapter gets the wrong prompt id index"""
+    def __init__(self,message):
+        raise self    
