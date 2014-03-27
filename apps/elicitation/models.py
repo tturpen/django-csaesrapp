@@ -30,6 +30,9 @@ class PromptSource(StateModel):
     disk_space = models.IntegerField()
     uri = models.TextField()    
     prompt_count = models.IntegerField()  
+    
+    def __unicode__(self):
+        return str(self.sourcefile)
      
 class ResourceManagementPrompt(StateModel):
     """Prompts from the Resource Management Corpus"""

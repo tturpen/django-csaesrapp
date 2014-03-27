@@ -6,10 +6,11 @@
     </head>
     <body>
     <!-- List of uploaded documents -->
+    <h1>Currently upload prompt sources</h1>
     {% if promptsources %}
         <ul>
         {% for promptsource in promptsources %}
-            <li> {{ promptsource.uri }}</li> 
+            <li> {{ promptsource.sourcefile }}</li> 
         {% endfor %}
         </ul>
     {% else %}
@@ -17,9 +18,9 @@
     {% endif %}
          <!-- Upload form. Note enctype attribute! --> 
         <form action="{% url 'admin:apps.elicitation.views.pslist' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
+             {% csrf_token %}
             <p>{{ form.non_field_errors }}</p>
-            <p>{{ form.sourcefile.label_tag }} {{ form.sourcefile.help_text }}</p>
+            <p>Upload a new {{ form.sourcefile.label_tag }} where the first line of the source file is a header.</p>
             <p>
                 {{ form.sourcefile.errors }}
                 SourceFile: {{ form.sourcefile }}
