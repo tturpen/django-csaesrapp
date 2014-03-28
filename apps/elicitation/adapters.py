@@ -27,18 +27,27 @@ class ResourceManagementAdapter(LineBasedAdapter):
         
 class CMUPronunciationAdapter(LineBasedAdapter):
     """An adapter for the CMU Pronunciation dictionary"""
-    def __init__(self):
+    def __init__(self,wordlist_file=None):
         header = ""
         delim = " "
-        comment = ";;;;"
-        LineBasedAdapter.__init__(self, header, delim, comment,0)
+        comment = ";;;"
+        if wordlist_file:
+            wordlist = open(wordlist_file).read().split("\n")
+            wordlist = [w.strip() for w in wordlist]
+            LineBasedAdapter.__init__(self, header, delim, comment,0,wordlist)
+        else:
+            LineBasedAdapter.__init__(self, header, delim, comment,0)
         self.constraints.extend([(False,self.endswith,"(1)"),
                                  (False,self.endswith,"(2)"),
                                  (False,self.endswith,"(3)"),
                                  (False,self.endswith,"(4)"),
                                  (False,self.endswith,"(5)"),
                                   ])
-        
+    
+    def post_proc_id_dict(self,d):
+        for key in d:
+            d[key] = (d[key][0][1:], d[key][1])
+        return d
         
         
         

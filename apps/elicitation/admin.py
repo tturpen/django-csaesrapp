@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.elicitation.models import ResourceManagementPrompt, PromptSource
+from apps.elicitation.models import ResourceManagementPrompt, PromptSource, ElicitationHit, PromptQueue
 from apps.elicitation.forms import PromptSourceForm, UploadFileForm
 from apps.elicitation import views
 from apps.elicitation.pipelines import ElicitationPipeline
@@ -22,11 +22,24 @@ import os
 
 class PromptInline(admin.TabularInline):
     model = ResourceManagementPrompt
+    
+class QueueAdmin(admin.ModelAdmin):
+    pass
 
+class HitAdmin(admin.ModelAdmin):
+    pipeline = ElicitationPipeline()
+    actions = ['remove_hit_from_mturk']
+    list_display = ["prompt_source_name","hit_id","hit_type_id"]
+    def remove_hit_from_mturk(self,request, queryset):        
+        for hit_model in queryset:
+            self.pipeline.remove_hit_from_mturk(hit_model)
+            
+    remove_hit_from_mturk.short_description = "Remove the hit from mturk"
+            
     
 class ElicitationAdmin(admin.ModelAdmin):
-    pipeline = ElicitationPipeline()
-    
+    pipeline = ElicitationPipeline()    
+    actions = ['create_hit_from_source','create_hit_from_partial_queue']
     fieldsets = [
                  (None, {'fields' : ['sourcefile']}),
                  ('Source File Information', {'fields': ['uri'], 'classes': ['collapse']})
@@ -35,7 +48,25 @@ class ElicitationAdmin(admin.ModelAdmin):
         #self.transcription_pipeline_handler = TranscriptionPipeline()        
         #promptsource_template = "elicitation:elicitation/promptsource.html"
 
-# CUSTOMIZE ADMIN URLS HERE    
+    def create_hit_from_partial_queue(self, request, queryset):
+        """Check if the queue is full given the prompt_source"""
+        qname = "cmupromptqueue"
+        if len(queryset) > 1:
+            return
+        prompt_source = list(queryset[:1])
+        self.pipeline.create_hit_from_partial_queue(prompt_source[0],qname,8)
+        
+    def create_hit_from_source(self, request, queryset):
+        """Take a prompt source and create desired HITs."""
+        if len(queryset) > 1:
+            return
+        prompt_source = list(queryset[:1])
+        if prompt_source:
+            self.pipeline.create_hits_from_promptsource(prompt_source[0])        
+        
+    create_hit_from_source.short_description = "Create a hit from a promptsource."    
+    
+    # CUSTOMIZE ADMIN URLS HERE    
     def get_urls(self):
         urls = super(ElicitationAdmin,self).get_urls()
         my_urls = patterns('',                           
@@ -48,8 +79,8 @@ class ElicitationAdmin(admin.ModelAdmin):
                            #(r'^(?P<pk>\w+)/$', self.admin_site.admin_view(self.review)))
                            )
         return my_urls + urls
-
-    def changelist_view(self, request, extra_context=None):
+    
+    def changelist_view(self, request, extra_context=None):        
         return super(ElicitationAdmin,self).changelist_view(request,extra_context)
     
     def load_promptsource(self,*args,**kwargs):
@@ -88,5 +119,8 @@ class ElicitationAdmin(admin.ModelAdmin):
     inlines = [PromptInline]
     #list_filter = ['pub_date']
     #search_fields = ['question']
-        
+
+    
 admin.site.register(PromptSource,ElicitationAdmin)
+admin.site.register(ElicitationHit,HitAdmin)
+admin.site.register(PromptQueue,QueueAdmin)

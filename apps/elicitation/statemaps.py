@@ -55,10 +55,13 @@ class Comparisons(object):
 #The previous function's value with be taken  
 class PromptSource(Comparisons):
     def __init__(self):
-        self.map = ["Listed"]
+        self.map = ["Listed","Hit"]
         
     def Listed(self,model):
         return self.greater_than_zero("prompt_count", model)
+    
+    def Hit(self,model):
+        return self.greater_than_zero("hit_list", model)
     
     
 class RecordingSource(Comparisons):

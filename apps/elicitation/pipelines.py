@@ -19,7 +19,7 @@ from boto.mturk.connection import ResultSet
 from apps.common.pipelines import MturkPipeline
 from apps.elicitation.handlers import ElicitationModelHandler, PromptHandler
 from apps.elicitation.factories import ElicitationModelFactory
-from apps.elicitation.adapters import ResourceManagementAdapter
+from apps.elicitation.adapters import ResourceManagementAdapter, CMUPronunciationAdapter
 
 from apps.filtering.handlers import StandardFilterHandler
 # from apps.elicitation.models import (ResourceManagementPrompt, 
@@ -34,7 +34,9 @@ class ElicitationPipeline(MturkPipeline):
         MturkPipeline.__init__(self)
         self.mh = ElicitationModelHandler()
         self.mf = ElicitationModelFactory()
-        self.rma = ResourceManagementAdapter()
+        #self.rma = ResourceManagementAdapter()
+        
+        self.rma = CMUPronunciationAdapter(wordlist_file="/home/taylor/csaesr/docs/CMUPronunciationWordList/wordlist.txt")
         self.filter = StandardFilterHandler(self.mh)
         self.logger = logging.getLogger("csaesr_app.elicitation_pipeline_handler")
                 
@@ -48,6 +50,7 @@ class ElicitationPipeline(MturkPipeline):
         
         lines = open(uri).readlines()        
         prompt_dict = self.rma.get_id_dict(lines)    
+        prompt_dict = self.rma.post_proc_id_dict(prompt_dict)
         for key in prompt_dict:
             prompt, line_number = prompt_dict[key]
             normalized_prompt =  self.normalizer.rm_prompt_normalization(prompt)
@@ -56,6 +59,72 @@ class ElicitationPipeline(MturkPipeline):
         source_model.save()
         self.mh.update_model_state("prompt_sources", source_model)  
  
+    def remove_hit_from_mturk(self,hit_model):
+        self.conn.disable_hit(hit_model.hit_id)
+        self.mh.remove_hit_id_from_prompt_sources(hit_model.hit_id)
+        self.mh.remove_hit(hit_model)
+                
+    def create_hits_from_promptsource(self,prompt_source):        
+        qname = "cmupromptqueue"
+        prompts = self.mh.get_prompt_source_prompts(prompt_source)
+        for prompt in prompts:
+            self.mh.enqueue_prompt(prompt, 1, max_queue_size=10,qname=qname)
+            prompt_queue = self.mh.get_current_queue(qname=qname)
+            if prompt_queue:
+                self.create_hit_from_queue(prompt_queue,prompt_source,qname)
+                
+    def create_hit_from_partial_queue(self,prompt_source,qname,size):
+        """Create a hit even if the queue is full given size"""
+        prompt_queue = self.mh.get_partial_queue(qname=qname,size=size)
+        if prompt_queue:
+            self.create_hit_from_queue(prompt_queue,prompt_source,qname)
+        
+    def create_hit_from_queue(self,prompt_queue,prompt_source,qname):      
+        prompt_pairs = self.mh.get_prompt_pairs_from_prompt_id(prompt_queue)
+        if prompt_pairs:
+            hit_title = "Audio Elicitation"
+            question_title = "Speak and Record your Voice" 
+            keywords = "audio, elicitation, speech, recording"
+            hit_description = "Speak English prompts and record your voice."
+            if self.cost_sensitive:
+                reward_per_clip = 0.02
+                max_assignments = 30
+                estimated_cost = self.hh.estimate_html_HIT_cost(prompt_pairs,reward_per_clip=reward_per_clip,\
+                                                                max_assignments=max_assignments)
+                prompts_in_hits = self.mh.prompts_already_in_hit(prompt_pairs)
+                if prompts_in_hits:
+                    #If one or more clips are already in a HIT, remove it from the queue
+                    self.mh.remove_models_from_queue(prompts_in_hits)
+                elif self.balance - estimated_cost >= 0:
+                    #if we have enough money, create the HIT
+                    response = self.hh.make_html_elicitation_HIT(prompt_pairs,hit_title,
+                                                 question_title, keywords,hit_description=hit_description,
+                                                 max_assignments=max_assignments,
+                                                 reward_per_clip=reward_per_clip,
+                                                 template="elicitation/cmuelicitationhit.html")
+#                         response = self.hh.make_question_form_elicitation_HIT(prompt_pairs,hit_title,
+#                                                      question_title, keywords)
+                    self.balance = self.balance - estimated_cost
+                    if type(response) == ResultSet and len(response) == 1 and response[0].IsValid:
+                        response = response[0]
+                        self.mh.remove_models_from_queue(prompt_queue,qname=qname)
+                        prompt_ids = [w.pk for w in prompt_queue]    
+                        hit_id = response.HITId
+                        hit_type_id = response.HITTypeId
+                        self.mf.create_elicitation_hit_model(hit_id,
+                                                             hit_type_id,
+                                                             prompt_ids,
+                                                             prompt_source_name=prompt_source.uri)
+                        prompt_source.add_hit(hit_id)
+                        self.mh.update_model_state("prompt_sources", prompt_source)
+                        prompt_source.save()  
+                        self.mh.update_models("prompts",prompt_queue, "hit_id", hit_id)      
+                        self.logger.info("Successfully created HIT: %s"%hit_id)
+                else:
+                    return True
+
+
+        
     def enqueue_prompts_and_generate_hits(self):
         prompts = self.mh.get_models_by_state("prompts", "New")
         for prompt in prompts:

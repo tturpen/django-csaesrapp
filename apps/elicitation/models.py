@@ -25,14 +25,18 @@ from djangotoolbox.fields import ListField, SetField
 from django.utils import timezone
          
 class PromptSource(StateModel):
-    """A file with a header and prompt on each line"""
+    """A file with a header and prompt on each line"""    
     sourcefile = models.FileField(upload_to='documents/%Y/%m/%d')    
     disk_space = models.IntegerField()
     uri = models.TextField()    
     prompt_count = models.IntegerField()  
+    hit_list = CseasrListField()
     
     def __unicode__(self):
         return str(self.sourcefile)
+    
+    def add_hit(self,hit_id):
+        self.hit_list.append(hit_id)
      
 class ResourceManagementPrompt(StateModel):
     """Prompts from the Resource Management Corpus"""
@@ -41,7 +45,7 @@ class ResourceManagementPrompt(StateModel):
     source = models.ForeignKey(PromptSource)
     inqueue = models.TextField()
     line_number = models.IntegerField()
-    rm_prompt_id = models.TextField()
+    prompt_id = models.TextField()
     word_count = models.IntegerField()
     words = CseasrListField(models.TextField())
     normalized_words = CseasrListField(models.TextField())
@@ -55,7 +59,11 @@ class ElicitationAudioRecording(AudioSource):
 class ElicitationHit(MturkHit):
     """The specific elicitation Hit class"""
     #prompts = CseasrListField(models.ForeignKey(ResourceManagementPrompt))
+    prompt_source_name = models.TextField()
     prompts = CseasrListField()
+    
+    def __unicode__(self):
+        return self.prompt_source_name
     
 class ElicitationAssignment(CsaesrAssignment):
     """The specific elicitation assignment class"""
@@ -98,12 +106,14 @@ class ObjQueue(StateModel):
     def enqueue(self,model_node):
         #self.queue.append(models.ForeignKey(model_node.pk))
         self.queue.append(model_node.pk)
+        self.save()
         
     def dequeue(self,model_node):
         for node in self.queue:
             #Derefernce the node pk to ResourceManagementPrompt
             if Node.objects.get(pk=node).member == model_node:
                 self.queue.remove(node)
+        self.save()
     
     def inqueue(self,prompt):
         for node_id in self.queue:
@@ -111,6 +121,19 @@ class ObjQueue(StateModel):
                 return True
         return False
     
+    def get_partial_queue(self,count):
+        """Get all the ModelNodes waiting in the queue and not being processed
+            Find the largest queue that is full
+            Update the queue and return the clips"""         
+        response = []
+        for node in self.queue:
+            node_obj = Node.objects.get(pk=node)
+            node_obj.processing = timezone.now()
+            node_obj.save()
+            response.append(node_obj.member)
+            if len(response) == count:
+                return response        
+        
     def get_current_queue(self):
         """Get all the ModelNodes waiting in the queue and not being processed
             Find the largest queue that is full
@@ -122,7 +145,7 @@ class ObjQueue(StateModel):
             node_obj.save()
             response.append(node_obj.member)
             if len(response) == self.max_size:
-                return response
+                return response        
                      
     def revive_queue(self,revive_time):
         """If an audio clip in the queue has been processing for more than
@@ -132,6 +155,7 @@ class ObjQueue(StateModel):
             if processing and timezone.now().replace(tzinfo=None) - processing > timezone.timedelta(revive_time):
                 node.processing = None
                 node.save()
+        self.save()
     
     #Abstract base class
     class Meta:

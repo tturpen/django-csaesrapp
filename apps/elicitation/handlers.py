@@ -39,7 +39,7 @@ class ElicitationModelHandler(ModelHandler):
         self.c["workers"] = Worker
         self.c["queue"]  = PromptQueue.objects.filter(max_size=5)
         if not self.c["queue"]:
-            self.c["queue"] = PromptQueue(max_size=5)
+            self.c["queue"] = PromptQueue(name="queue",max_size=5)
             self.c["queue"].save()
         self.c["prompt_sources"] = PromptSource
         self.c["prompts"] = ResourceManagementPrompt
@@ -49,23 +49,41 @@ class ElicitationModelHandler(ModelHandler):
         self.state_map = ElicitationStateMap().state_map
         self.logger = logging.getLogger("transcription_engine.mongodb_elicitation_handler")
         
+    def remove_hit(self,model):        
+        model.delete()
+        
+    def remove_hit_id_from_prompt_sources(self,hit_id):
+        for prompt_source in self.c["prompt_sources"].objects.all():
+            if hit_id in prompt_source.hit_list:
+                prompt_source.hit_list.remove(hit_id)
+        
     def enqueue_prompt(self,prompt,priority=1,max_queue_size=3,qname="queue"):
         """Queue the audio prompt."""        
+        if PromptQueue.objects.filter(name=qname).count() > 0:
+            q = PromptQueue.objects.get(name=qname)
+        else:
+            q = PromptQueue(name=qname,max_size=max_queue_size)
         search = {"member": prompt}
         document = {"member": prompt,
                       "priority": priority,
                       }        
-        if not self.c[qname].inqueue(prompt):
+        if not q.inqueue(prompt):
             node = Node(**document)
             node.save()
-            self.c[qname].enqueue(node)
-            self.c[qname].save()
+            q.enqueue(node)
+            q.save()
         self.update_model("prompts",prompt,"inqueue",qname)
         self.logger.info("Queued prompt: %s "%prompt.pk)
         
     def get_current_queue(self,qname="queue"):
-        self.c[qname].revive_queue(self.revive_queue_time)
-        return self.c[qname].get_current_queue()
+        q = PromptQueue.objects.get(name=qname)    
+        q.revive_queue(self.revive_queue_time)
+        return q.get_current_queue()
+    
+    def get_partial_queue(self,qname="queue",size=10):
+        q = PromptQueue.objects.get(name=qname)
+        q.revive_queue(self.revive_queue_time)
+        return q.get_partial_queue(size)
     
     def prompts_already_in_hit(self,prompt_queue):
         prompts_in_hits = set()
@@ -78,9 +96,12 @@ class ElicitationModelHandler(ModelHandler):
         return prompts_in_hits
         
     def remove_models_from_queue(self,prompt_queue,qname="queue"):
+        q = PromptQueue.objects.get(name=qname)        
         for prompt in prompt_queue:
-            self.c[qname].dequeue(prompt)
+            q.dequeue(prompt)
         
+    def get_prompt_source_prompts(self,prompt_source):
+        return ResourceManagementPrompt.objects.filter(source_id=prompt_source.pk)
  
         
 
