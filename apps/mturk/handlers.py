@@ -13,6 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from boto.mturk.connection import MTurkConnection, MTurkRequestError
 from boto.mturk.question import ExternalQuestion, QuestionForm, Overview, HTMLQuestion, QuestionContent, FormattedContent, FreeTextAnswer, AnswerSpecification, Question, Flash, SelectionAnswer
+from boto.mturk import qualification
 from apps.mturk.exceptions import IncorrectTextFieldCount
 
 from django.template import RequestContext, loader, Context
@@ -154,22 +155,21 @@ class HitHandler():
                                   hit_description,
                                   duration=DEFAULT_DURATION,
                                   reward_per_clip=DEFAULT_REWARD,
-                                  max_assignments=DEFAULT_MAX_ASSIGNMENTS):
+                                  max_assignments=DEFAULT_MAX_ASSIGNMENTS,
+                                  template='common/csaesrhit.html'):
         overview = Overview()
         overview.append_field("Title", "Record yourself speaking the words in the prompt.")
         descriptions = ["The following prompts are in English.",
-                        "Click the prompt to record your voice (Redirects to recording Page).",
+                        "Click the prompt to record your voice (Redirects to recording Page).",                        
                         "Follow the directions on that page.",
-                        "Copy and paste the URL in box below the prompt on this page.",
-                        "You will NEVER be asked to divulge any personal or identifying information."
+                        "You MUST record yourself saying the prompt TWICE.",                        
+                        "Copy and paste the EACH URL a SEPARATE box below the prompt.",
+                        "Each prompt must have two DIFFERENT recordings.",
+                        "You must NOT copy and paste the same URL twice for each recording."                        
                         ]
         keywords = "audio, recording, elicitation, English"
-        template = loader.get_template('common/csaesrhit.html')
-#         context = RequestContext(request, {
-#                                        'latest_poll_list': this_years_polls
-#                                        })
-#         #return HttpResponse(template.render(context))
-#         html = render(request,'polls/index.html',context)
+        template = loader.get_template(template)
+
         prompt_ids = [prompt[0] for prompt in prompt_pairs]
         prompt_ids_words = [(prompt[0]," ".join(prompt[1]),"_".join(prompt[1])) for prompt in prompt_pairs]
         
@@ -181,7 +181,8 @@ class HitHandler():
         html = template.render(context)
         html_question = HTMLQuestion(html,800)
         open("/home/taylor/csaesr/tmp/hithtml.html","w").write(html)
-        
+        quals = qualification.Qualifications()
+        quals.add(qualification.LocaleRequirement("EqualTo","US"))
         #reward calculation
         reward = reward_per_clip*len(prompt_pairs)
         try:
@@ -191,6 +192,7 @@ class HitHandler():
                                     description=hit_description,
                                     keywords=keywords,
                                     duration = duration,
+                                    qualifications = quals,
                                     reward = reward)
         except MTurkRequestError as e:
             if e.reason != "OK":

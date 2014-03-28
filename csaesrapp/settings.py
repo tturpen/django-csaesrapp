@@ -15,7 +15,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
         'TEST_NAME': 'cseasr_app_test_db',
-        'NAME' : 'csaesrapp_test'
+        'NAME' : 'production_csaesrapp'
     }
 }
 

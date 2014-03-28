@@ -24,8 +24,8 @@ class MturkPipeline(object):
     def __init__(self):
         aws_id = os.environ['AWS_ACCESS_KEY_ID']
         aws_k = os.environ['AWS_ACCESS_KEY']
-        #HOST='mechanicalturk.amazonaws.com'
-        HOST='mechanicalturk.sandbox.amazonaws.com'
+        HOST='mechanicalturk.amazonaws.com'
+        #HOST='mechanicalturk.sandbox.amazonaws.com'
         
         try:
             self.conn = MTurkConnection(aws_access_key_id=aws_id,\
@@ -38,7 +38,7 @@ class MturkPipeline(object):
         self.hh = HitHandler(self.conn)
         self.normalizer = NormalizationHandler()
         self.balance = self.conn.get_account_balance()[0].amount
-        self.batch_cost = 100
+        self.batch_cost = 70
         if self.balance > self.batch_cost:
             self.balance = self.batch_cost
         else:

@@ -141,7 +141,7 @@
 <div>&nbsp;</div>
 {% for prompt_id, prompt_words, underscored_prompt in prompt_pairs %}
 	<h2>prompt: <a href="http://www.seas.upenn.edu/~tturpen/vocaroo_elicitation.html?prompt={{ underscored_prompt }}" target="_blank">{{ prompt_words }}</a></h2>
-	<p>Paste Recording URL here:</p>
+	<p>Paste Recording URLs here:</p>
 	<p><input id="0{{ prompt_id }}" name="0{{ prompt_id }}" size="100" type="text" /><input id="00{{ prompt_id }}" name="00{{ prompt_id }}" size="100" type="text" /></p>
 {% endfor %}
 
