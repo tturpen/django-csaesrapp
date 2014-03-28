@@ -202,11 +202,15 @@ class ModelHandler(object):
             elif d: denied.append(d)
         return approved, denied    
     
-    def remove_elicitation_hit(self,hit_id):
-        self.remove_artifacts_by_id("elicitation_hits", [hit_id])
-                
     def get_prompt_pairs(self,prompt_queue):
         """Given the queue entries, return the id and text for the prompt
         """
         return [(prompt.pk,prompt.normalized_words) for prompt in prompt_queue]
+    
+    def get_prompt_pairs_from_prompt_id(self,prompt_queue):
+        """For now give them the words,
+            which are stored in the index, instead of the
+            pronunciations which are stored in 'words'
+        """            
+        return [(prompt.pk,[prompt.prompt_id]) for prompt in prompt_queue]
 

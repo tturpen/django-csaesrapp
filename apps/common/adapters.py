@@ -12,18 +12,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from apps.common.exceptions import DuplicateSentenceIds, WrongPromptIdIndex
+import sys
 
 class LineBasedAdapter(object):
-    def __init__(self,header,delim,comment,id_index):
+    def __init__(self,header,delim,comment,id_index,wordlist=None):
         self.header = header
         self.delim = delim
         self.comment = comment
         self.id_index = id_index
         self.id_proc = self.strip_newline
+        self.line_proc = self.strip_and_replace_multiple_spaces
+        self.wordlist = wordlist
         #constraint: expected return, function, value 
         self.constraints = [
                             (False,self.startswith,self.comment)#Startswith comment
                             ]
+        
+    def strip_and_replace_multiple_spaces(self,line):
+        return line.strip()        
+    
     def strip_newline(self,word):
         return word.strip()
     
@@ -46,10 +53,10 @@ class LineBasedAdapter(object):
             Lines should not have a header."""
         d = {}
         for i, line in enumerate(lines):
-            line = line.strip()
+            line = self.line_proc(line)
             if self.meets_constraints(line):
                 pieces = line.split(self.delim)                    
-                if self.id_index:
+                if self.id_index != None:
                     if self.id_index < 0:
                         #my offsets below don't work on negatives => convert index
                         index = len(pieces) + self.id_index
@@ -61,7 +68,12 @@ class LineBasedAdapter(object):
                     if entry_id in d:
                         #Somehow this line's id is not unique
                         raise DuplicateSentenceIds
-                    d[entry_id] = (pieces[:index]+pieces[index+1:],i)
+                    #Check for wordlist
+                    if self.wordlist and entry_id.lower() in self.wordlist:
+                        d[entry_id] = (pieces[:index]+pieces[index+1:],i)
+                    elif not self.wordlist:
+                        d[entry_id] = (pieces[:index]+pieces[index+1:],i)
+                        
                 else:                                            
                     d[i] = (pieces,i)
         return d
