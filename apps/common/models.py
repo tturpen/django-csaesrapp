@@ -3,11 +3,6 @@ from django.utils import timezone
 from django.contrib.contenttypes import generic
 from djangotoolbox.fields import ListField, SetField
 
-from apps.common.forms import StringListField
-
-class CseasrListField(ListField):
-    def formfield(self,**kwargs):
-        return models.Field.formfield(self, StringListField, **kwargs)
     
 class StateModel(models.Model):
     state = models.TextField()
@@ -56,7 +51,7 @@ class MturkAssignment(StateModel):
     accept_time = models.DateTimeField()
     submit_time = models.DateTimeField()
     auto_approval_date = models.DateTimeField()
-    worker_id = models.IntegerField()
+    worker_id = models.TextField()
     assignment_id = models.TextField()
     
     #Abstract base class
