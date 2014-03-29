@@ -44,7 +44,7 @@ class ElicitationModelHandler(ModelHandler):
         self.c["prompt_sources"] = PromptSource
         self.c["prompts"] = ResourceManagementPrompt
         self.c["hits"] = ElicitationHit
-        self.c["assignments"] = ElicitationAssignment.objects
+        self.c["assignments"] = ElicitationAssignment
  
         self.state_map = ElicitationStateMap().state_map
         self.logger = logging.getLogger("transcription_engine.mongodb_elicitation_handler")

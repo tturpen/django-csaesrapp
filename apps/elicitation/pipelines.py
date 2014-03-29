@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import os
+import sys
+
 from boto.mturk.connection import ResultSet
 
 from apps.common.pipelines import MturkPipeline
@@ -36,7 +38,7 @@ class ElicitationPipeline(MturkPipeline):
         self.mf = ElicitationModelFactory()
         #self.rma = ResourceManagementAdapter()
         
-        self.rma = CMUPronunciationAdapter(wordlist_file="/home/taylor/csaesr/docs/CMUPronunciationWordList/wordlist.txt")
+        self.prompt_adapter = CMUPronunciationAdapter(wordlist_file="/home/taylor/csaesr/docs/CMUPronunciationWordList/wordlist.txt")
         self.filter = StandardFilterHandler(self.mh)
         self.logger = logging.getLogger("csaesr_app.elicitation_pipeline_handler")
                 
@@ -49,8 +51,8 @@ class ElicitationPipeline(MturkPipeline):
         source_model.disk_space = size
         
         lines = open(uri).readlines()        
-        prompt_dict = self.rma.get_id_dict(lines)    
-        prompt_dict = self.rma.post_proc_id_dict(prompt_dict)
+        prompt_dict = self.prompt_adapter.get_id_dict(lines)    
+        prompt_dict = self.prompt_adapter.post_proc_id_dict(prompt_dict)
         for key in prompt_dict:
             prompt, line_number = prompt_dict[key]
             normalized_prompt =  self.normalizer.rm_prompt_normalization(prompt)
@@ -135,49 +137,49 @@ class ElicitationPipeline(MturkPipeline):
                 else:
                     return True
 
-    def check_hits_for_submitted_assignments(self):
-        """Check all assignments for prompts.
-            Update the audio clips.
-            This is a non-destructive load of the assignments from MTurk"""
-        hits = self.conn.get_all_hits()
-        for hit in hits:
-            hit_id = hit.HITId
-            if self.mh.get_model("hits",{"hit_id": hit_id}):
-                assignments = self.conn.get_assignments(hit_id)
-                have_all_assignments = True
-                assignment_ids = []
-                for assignment in assignments:
-                    assignment_id = assignment.AssignmentId
-                    assignment_ids.append(assignment_id)  
-                    if self.mh.get_artifact("elicitation_assignments",{"_id":assignment.AssignmentId}):
-                        #We create assignments here, so if we already have it, skip
-                        #continue
-                        pass
-                    else:
-                        have_all_assignments = False                                         
-                    recording_ids = []                
-                    prompt_id_tag = "prompt_id"
-                    recording_url_tag = "recording_url"
-                    worker_id_tag = "worker_id"
-                    recording_dict = self.ah.get_assignment_submitted_text_dict(assignment,prompt_id_tag,recording_url_tag)
-                    worker_oid = self.mh.create_worker_artifact(assignment.WorkerId)   
-                    for recording in recording_dict:
-                        if not self.mh.get_artifact_by_id("prompts",recording[prompt_id_tag]): 
-                            self.logger.info("Assignment(%s) with unknown %s(%s) skipped"%\
-                                        (assignment_id,prompt_id_tag,recording[prompt_id_tag]))
-                            break                        
-                        recording_id = self.mh.create_recording_source_artifact(recording[prompt_id_tag],
-                                                                         recording[recording_url_tag],
-                                                                         recording[worker_id_tag])
-                        self.mh.add_item_to_artifact_set("prompts", recording[prompt_id_tag], "recording_sources",
-                                                       recording_id)
-                        recording_ids.append(recording_id)
-                    else:
-                        self.mh.create_assignment_artifact(assignment,
-                                                       recording_ids)
-                        self.mh.add_item_to_artifact_set("elicitation_hits", hit_id, "submitted_assignments", assignment_id)
-                        self.mh.add_item_to_artifact_set("workers", worker_oid, "submitted_assignments", assignment_id)
-                print("Elicitation HIT(%s) submitted assignments: %s "%(hit_id,assignment_ids))    
+    def load_submitted_assignments_from_mturk(self,hit_obj):        
+        hit_id = hit_obj.hit_id
+        if self.mh.get_model("hits",{"hit_id": hit_id}):
+            assignments = self.conn.get_assignments(hit_id)
+            have_all_assignments = True
+            assignment_ids = []
+            for assignment in assignments:
+                assignment_id = assignment.AssignmentId
+                assignment_ids.append(assignment_id)  
+                if self.mh.get_model("assignments",{"assignment_id":assignment.AssignmentId}):
+                    #We create assignments here, so if we already have it, skip
+                    continue
+                    #pass
+                else:
+                    have_all_assignments = False                                         
+                recording_ids = []                
+                prompt_id_tag = "prompt_id"
+                recording_url_tag = "recording_url"
+                worker_id_tag = "worker_id"
+                recording_dict = self.ah.get_assignment_submitted_text_dict(assignment,prompt_id_tag,recording_url_tag)
+                worker_oid = self.mf.create_worker_model(assignment.WorkerId)   
+                print("Trying to get recording_dict(%s)"%recording_dict)
+                for recording in recording_dict:
+                    prompt_id = self.prompt_adapter.get_prompt_id_from_assignment_answer_id(recording[prompt_id_tag])
+                    print("Trying to get prompt_id(%s)"%prompt_id)
+                    sys.stdout.flush()
+                    if prompt_id == "zipcode":
+                        continue   
+                    elif not self.mh.get_model_by_id("prompts",prompt_id): 
+                        self.logger.info("Assignment(%s) with unknown %s(%s) skipped"%\
+                                    (assignment_id,prompt_id_tag,recording[prompt_id_tag]))
+                        break                     
+#                     recording_id = self.mh.create_recording_source_artifact(recording[prompt_id_tag],
+#                                                                      recording[recording_url_tag],
+#                                                                      recording[worker_id_tag])
+#                     self.mh.add_item_to_artifact_set("prompts", recording[prompt_id_tag], "recording_sources",
+#                                                    recording_id)
+#                     recording_ids.append(recording_id)
+                else:
+                    self.mf.create_assignment_model(assignment, recording_ids,hit_obj)
+#                     self.mh.add_item_to_artifact_set("elicitation_hits", hit_id, "submitted_assignments", assignment_id)
+#                     self.mh.add_item_to_artifact_set("workers", worker_oid, "submitted_assignments", assignment_id)
+            print("Elicitation HIT(%s) submitted assignments: %s "%(hit_id,assignment_ids))    
 
                        
     def run(self):

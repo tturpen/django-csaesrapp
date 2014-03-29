@@ -18,8 +18,9 @@ from collections import defaultdict
 from apps.common.models import (AudioSource,
                                 MturkHit,
                                 CsaesrAssignment,
-                                StateModel,
-                                CseasrListField,)
+                                StateModel,)
+from apps.common.fields import (CseasrListField,
+                                CseasrSetField)
 #from apps.elicitation.pipelines.ElicitationPipeline import load_PromptSource_RawToList
 from djangotoolbox.fields import ListField, SetField
 from django.utils import timezone
@@ -69,8 +70,8 @@ class ElicitationHit(MturkHit):
     
 class ElicitationAssignment(CsaesrAssignment):
     """The specific elicitation assignment class"""
-    recordings = SetField(models.ForeignKey(ElicitationAudioRecording))
-    hit_id = models.ForeignKey(ElicitationHit)
+    recordings = CseasrSetField(models.ForeignKey(ElicitationAudioRecording))
+    hit = models.ForeignKey(ElicitationHit)
     
 class Worker(StateModel):
     """The elicitation worker model.

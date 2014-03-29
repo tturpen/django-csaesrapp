@@ -1,5 +1,5 @@
 from django import forms
-from apps.elicitation.models import PromptSource
+from apps.elicitation.models import PromptSource, ElicitationAudioRecording, ElicitationAssignment
 
 class UploadFileForm(forms.Form):
     title = forms.CharField(max_length=50)
@@ -23,4 +23,16 @@ class RMPromptForm(forms.ModelForm):
         if instance and instance.pk:
             return instance.sku
         else:
-            return self.cleaned_data['words']        
+            return self.cleaned_data['words']     
+        
+class ElicitationAssignmentForm(forms.ModelForm):
+    def __init__(self,*args,**kwargs):
+        super(ElicitationAssignmentForm,self).__init__(*args,**kwargs)
+        self.fields['recordings'].widget.choices = [(i.pk, i) for i in ElicitationAudioRecording.objects.all()]
+        if self.instance.pk:
+            self.fields['recordings'].initial = self.instance.field
+            
+    class Meta:
+        model = ElicitationAssignment
+        
+        

@@ -49,5 +49,6 @@ class CMUPronunciationAdapter(LineBasedAdapter):
             d[key] = (d[key][0][1:], d[key][1])
         return d
         
-        
+    def get_prompt_id_from_assignment_answer_id(self,assignment_answer_id):
+        return assignment_answer_id.lstrip("0")
         

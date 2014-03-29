@@ -12,8 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from django.forms.widgets import TextInput
+from django.forms.widgets import TextInput, SelectMultiple
 
 class WordListEditorWidget(TextInput):
     def format_output(self,rendered_widgets):
         return "".join(rendered_widgets)
+    
+class SetFieldWidget(SelectMultiple):
+    pass

@@ -1,12 +1,12 @@
 from django.contrib import admin
-from apps.elicitation.models import ResourceManagementPrompt, PromptSource, ElicitationHit, PromptQueue
+from apps.elicitation.models import ResourceManagementPrompt, PromptSource, ElicitationHit, PromptQueue, ElicitationAssignment 
 from apps.elicitation.forms import PromptSourceForm, UploadFileForm, RMPromptForm
 from apps.elicitation import views
 from apps.elicitation.pipelines import ElicitationPipeline
 from apps.elicitation.handlers import ElicitationModelHandler
-from apps.elicitation.widgets import WordListEditorWidget
+from apps.elicitation.widgets import WordListEditorWidget, SetFieldWidget
 
-from apps.common.models import CseasrListField
+from apps.common.fields import CseasrListField
 #from apps.transcription.pipelines import TranscriptionPipeline
 
 
@@ -21,10 +21,19 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 
+from djangotoolbox.fields import SetField
+
 import os
 
 class PromptInline(admin.TabularInline):
     model = ResourceManagementPrompt
+    
+class AssignmentAdmin(admin.ModelAdmin):
+    list_display = ["hit"]
+    formfield_overrides = {
+                           SetField : {'widget' : SetFieldWidget}
+                           }
+    
     
 class QueueAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -35,11 +44,15 @@ class QueueAdmin(admin.ModelAdmin):
 
 class HitAdmin(admin.ModelAdmin):
     pipeline = ElicitationPipeline()
-    actions = ['remove_hit_from_mturk']
+    actions = ['remove_hit_from_mturk','get_hit_submitted_assignments']
     list_display = ["template_name","prompt_source_name","hit_id","hit_type_id","prompt_count","redundancy"]
     def remove_hit_from_mturk(self,request, queryset):        
         for hit_model in queryset:
             self.pipeline.remove_hit_from_mturk(hit_model)
+            
+    def get_hit_submitted_assignments(self,request, queryset):
+        for hit in queryset:
+            self.pipeline.load_submitted_assignments_from_mturk(hit)
             
     def prompt_count(self,obj):
         return len(obj.prompts)
@@ -147,3 +160,4 @@ admin.site.register(PromptSource,PromptSourceAdmin)
 admin.site.register(ElicitationHit,HitAdmin)
 admin.site.register(PromptQueue,QueueAdmin)
 admin.site.register(ResourceManagementPrompt,PromptAdmin)
+admin.site.register(ElicitationAssignment,AssignmentAdmin)
