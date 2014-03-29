@@ -1,3 +1,17 @@
+# Copyright (C) 2014 Taylor Turpen
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from apps.common.handlers import ModelHandler
 import logging
 
@@ -17,35 +31,32 @@ class ModelFactory(object):
             pk = model.pk
             self.logger.info("Created %s model(%s) "%(collection,pk))
         elif update:
-            self.mh.update_model(model,document)
-            pk = model.pk
+            self.mh.update_model(collection,model,document=document)
         self.mh.update_model_state(collection, model)
         return model       
     
     
-    def create_assignment_model(self,assignment,answers):
+    def create_assignment_model(self,assignment,answers,hit_obj):
         """Create the assignment model with the transcription ids.
             AMTAssignmentStatus is the AMT assignment state.
             state is the engine lifecycle state."""
         assignment_id = assignment.AssignmentId
         document = {"assignment_id":assignment_id,
-                     "AcceptTime": assignment.AcceptTime,
-                     "AMTAssignmentStatus" : assignment.AssignmentStatus,
-                     "AutoApprovalTime" : assignment.AutoApprovalTime,
-                     "hit_id" : assignment.HITId,
+                     "accept_time": assignment.AcceptTime,
+                     "assignment_status" : assignment.AssignmentStatus,
+                     "auto_approval_date" : assignment.AutoApprovalTime,
+                     "submit_time": assignment.SubmitTime,
+                     "hit" : hit_obj,
                      "worker_id" : assignment.WorkerId,
                      "recordings" : answers}
-        model = self.create_model("elicitation_assignments", {"assignment_id": assignment_id},document)        
+        model = self.create_model("assignments", {"assignment_id": assignment_id},document)        
         return model
-
         
     def create_worker_model(self,worker_id):
         document = {"worker_id": worker_id}
         model = self.create_model("workers",{"worker_id": worker_id},document)
         return model
-    
-
-    
+        
     def create_recording_source_artifact(self,prompt_id,recording_url,worker_id):
         """Use the recording handler to download the recording
             and create the artifact"""

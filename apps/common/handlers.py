@@ -37,8 +37,9 @@ class ModelHandler(object):
  
         
     def get_model_by_id(self,collection,pk,field=None,refine={}):
-        m = get_object_or_404(self.c["collection"])
-        return field in m and m[field] if field and m else m
+        m = get_object_or_404(self.c[collection],pk=pk)
+        return m
+        #return field in m and m[field] if field and m else m
 #         return self.get_artifact(collection,{"pk":ObjectId(art_id)},field,refine)
 #         return self.get_artifact(collection,{"_id":art_id},field,refine)
     
