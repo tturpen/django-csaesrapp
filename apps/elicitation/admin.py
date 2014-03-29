@@ -1,9 +1,12 @@
 from django.contrib import admin
 from apps.elicitation.models import ResourceManagementPrompt, PromptSource, ElicitationHit, PromptQueue
-from apps.elicitation.forms import PromptSourceForm, UploadFileForm
+from apps.elicitation.forms import PromptSourceForm, UploadFileForm, RMPromptForm
 from apps.elicitation import views
 from apps.elicitation.pipelines import ElicitationPipeline
 from apps.elicitation.handlers import ElicitationModelHandler
+from apps.elicitation.widgets import WordListEditorWidget
+
+from apps.common.models import CseasrListField
 #from apps.transcription.pipelines import TranscriptionPipeline
 
 
@@ -24,20 +27,30 @@ class PromptInline(admin.TabularInline):
     model = ResourceManagementPrompt
     
 class QueueAdmin(admin.ModelAdmin):
-    pass
+    fieldsets = [
+                 (None, {'fields': ['name']})
+                 ]
+    list_display = ["name"]
+    
 
 class HitAdmin(admin.ModelAdmin):
     pipeline = ElicitationPipeline()
     actions = ['remove_hit_from_mturk']
-    list_display = ["prompt_source_name","hit_id","hit_type_id"]
+    list_display = ["template_name","prompt_source_name","hit_id","hit_type_id","prompt_count","redundancy"]
     def remove_hit_from_mturk(self,request, queryset):        
         for hit_model in queryset:
             self.pipeline.remove_hit_from_mturk(hit_model)
             
+    def prompt_count(self,obj):
+        return len(obj.prompts)
+            
     remove_hit_from_mturk.short_description = "Remove the hit from mturk"
             
+
+class PromptAdmin(admin.ModelAdmin):
+    form = RMPromptForm
     
-class ElicitationAdmin(admin.ModelAdmin):
+class PromptSourceAdmin(admin.ModelAdmin):
     pipeline = ElicitationPipeline()    
     actions = ['create_hit_from_source','create_hit_from_partial_queue']
     fieldsets = [
@@ -45,43 +58,52 @@ class ElicitationAdmin(admin.ModelAdmin):
                  ('Source File Information', {'fields': ['uri'], 'classes': ['collapse']})
                  ]
     list_display = ["sourcefile","uri","disk_space","state"]
+    form = PromptSourceForm
+    formfield_overrides = {
+                           CseasrListField : {'widget' : WordListEditorWidget}
+                           }
         #self.transcription_pipeline_handler = TranscriptionPipeline()        
         #promptsource_template = "elicitation:elicitation/promptsource.html"
-
-    def create_hit_from_partial_queue(self, request, queryset):
-        """Check if the queue is full given the prompt_source"""
-        qname = "cmupromptqueue"
-        if len(queryset) > 1:
-            return
-        prompt_source = list(queryset[:1])
-        self.pipeline.create_hit_from_partial_queue(prompt_source[0],qname,8)
         
-    def create_hit_from_source(self, request, queryset):
-        """Take a prompt source and create desired HITs."""
-        if len(queryset) > 1:
-            return
-        prompt_source = list(queryset[:1])
-        if prompt_source:
-            self.pipeline.create_hits_from_promptsource(prompt_source[0])        
-        
-    create_hit_from_source.short_description = "Create a hit from a promptsource."    
-    
-    # CUSTOMIZE ADMIN URLS HERE    
+        # CUSTOMIZE ADMIN URLS HERE    
     def get_urls(self):
-        urls = super(ElicitationAdmin,self).get_urls()
+        urls = super(PromptSourceAdmin,self).get_urls()
         my_urls = patterns('',                           
                            #url(r'^add/$',self.admin_site.admin_view(self.upload_file))                           
                            #url(r'^add/$',self.admin_site.admin_view(self.list))
                            url(r'^add/$',views.pslist),
+                           #url(r'^(?P<pk>\w+)/$',views.prompt_source_view),
                            url(r'^promptsource/$',views.IndexView),
                            url(r'^(?P<pk>\w+)/load/$',self.load_promptsource),
                            #url(r'^add/$',views.upload_file),                           
                            #(r'^(?P<pk>\w+)/$', self.admin_site.admin_view(self.review)))
                            )
         return my_urls + urls
+
+    def create_hit_from_partial_queue(self, request, queryset):
+        """Check if the queue is full given the prompt_source"""
+        if len(queryset) > 1:
+            return
+        prompt_source = list(queryset[:1])
+        prompt_source = prompt_source[0]
+        qname = prompt_source.uri
+        self.pipeline.create_hit_from_partial_queue(prompt_source,qname,8)
+        
+    def create_hit_from_source(self, request, queryset):
+        """Take a prompt source and create desired HITs."""
+        if len(queryset) > 1:
+            return
+        prompt_source = list(queryset[:1])
+        prompt_source = prompt_source[0]
+        qname = prompt_source.uri
+        if prompt_source:
+            self.pipeline.create_hits_from_promptsource(prompt_source,qname)        
+        
+    create_hit_from_source.short_description = "Create most hits possible from promptsource"    
+    
     
     def changelist_view(self, request, extra_context=None):        
-        return super(ElicitationAdmin,self).changelist_view(request,extra_context)
+        return super(PromptSourceAdmin,self).changelist_view(request,extra_context)
     
     def load_promptsource(self,*args,**kwargs):
         if "pk" in kwargs:
@@ -110,7 +132,7 @@ class ElicitationAdmin(admin.ModelAdmin):
             kwargs['fields'] = ['uri',]
             #kwargs['elicitation_pipeline_handler'] = self.elicitation_pipeline_handler
             #kwargs['transcription_pipeline_handler'] = self.elicitation_pipeline_handler
-        return super(ElicitationAdmin, self).get_form(request, obj, **kwargs)
+        return super(PromptSourceAdmin, self).get_form(request, obj, **kwargs)
 #     list_display = ("Source", "pub_date", "was_published_recently")
 #     fieldsets = [
 #                  (None, {'fields' : ['question']}),
@@ -121,6 +143,7 @@ class ElicitationAdmin(admin.ModelAdmin):
     #search_fields = ['question']
 
     
-admin.site.register(PromptSource,ElicitationAdmin)
+admin.site.register(PromptSource,PromptSourceAdmin)
 admin.site.register(ElicitationHit,HitAdmin)
 admin.site.register(PromptQueue,QueueAdmin)
+admin.site.register(ResourceManagementPrompt,PromptAdmin)

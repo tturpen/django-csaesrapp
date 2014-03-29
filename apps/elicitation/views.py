@@ -19,6 +19,7 @@ class IndexView(ListView):
         """Return the five most recent published polls."""
         return PromptSource.objects.all()
     
+    
 def index(request):
     prompt_source_list = PromptSource.objects.all()
     context = RequestContext(request, {

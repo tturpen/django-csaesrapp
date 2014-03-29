@@ -85,6 +85,11 @@ class ElicitationModelHandler(ModelHandler):
         q.revive_queue(self.revive_queue_time)
         return q.get_partial_queue(size)
     
+    def reset_queue(self,qname):
+        if PromptQueue.objects.filter(name=qname).count() > 0:
+            q = PromptQueue.objects.get(name=qname)
+            q.reset()
+        
     def prompts_already_in_hit(self,prompt_queue):
         prompts_in_hits = set()
         for hit in self.c["hits"].objects.all():

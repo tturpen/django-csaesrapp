@@ -61,6 +61,8 @@ class ElicitationHit(MturkHit):
     #prompts = CseasrListField(models.ForeignKey(ResourceManagementPrompt))
     prompt_source_name = models.TextField()
     prompts = CseasrListField()
+    template_name = models.TextField()    
+    redundancy = models.IntegerField()
     
     def __unicode__(self):
         return self.prompt_source_name
@@ -103,6 +105,10 @@ class ObjQueue(StateModel):
     max_size = models.IntegerField()
     queue = CseasrListField()
 
+    def reset(self):
+        self.queue = CseasrListField()
+        self.save()
+        
     def enqueue(self,model_node):
         #self.queue.append(models.ForeignKey(model_node.pk))
         self.queue.append(model_node.pk)
@@ -164,3 +170,7 @@ class ObjQueue(StateModel):
 class PromptQueue(ObjQueue):
     """A queue of prompts"""
     name = models.TextField("Prompts")
+    
+    def __unicode__(self):
+        return self.name
+    

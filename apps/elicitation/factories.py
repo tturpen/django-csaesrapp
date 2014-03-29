@@ -6,14 +6,22 @@ class ElicitationModelFactory(ModelFactory):
         ModelFactory.__init__(self)
         self.mh = ElicitationModelHandler()
                 
-    def create_elicitation_hit_model(self,hit_id,hit_type_id,prompt_ids,prompt_source_name):        
+    def create_elicitation_hit_model(self,
+                                     hit_id,
+                                     hit_type_id,
+                                     prompt_ids,
+                                     prompt_source_name,
+                                     template_name,
+                                     redundancy):        
         if type(prompt_ids) != list:
             raise IOError
         search = {"hit_id":hit_id}
         document =  {"hit_id":hit_id,
                      "hit_type_id": hit_type_id,
                      "prompts" : prompt_ids,
-                     "prompt_source_name": prompt_source_name}
+                     "prompt_source_name": prompt_source_name,
+                     "template_name": template_name,
+                     "redundancy": redundancy}
         return self.create_model("hits",search,document)
     
     def create_word_prompt_model(self,source, words, normalized_words,line_number,prompt_id,word_count):
