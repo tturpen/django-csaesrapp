@@ -37,6 +37,8 @@ class MturkHit(StateModel):
     """Mturk hit"""
     hit_id = models.TextField()
     hit_type_id = models.TextField()
+    template_name = models.TextField()    
+    redundancy = models.IntegerField()
     
     #Abstract base class
     class Meta:
