@@ -1,8 +1,10 @@
 ### Dependencies
-- Nose TestSuiteRunner
-- boto
-- pymongo
-- sph2pipe (I got it here: https://github.com/foundintranslation/Kaldi/blob/master/tools/sph2pipe_v2.5/sph2pipe)
+- [Nose](https://pypi.python.org/pypi/django-nose)
+- [boto](https://github.com/boto/boto )
+- [pymongo](http://api.mongodb.org/python/current/installation.html)
+- sph2pipe ([I got it here](https://github.com/foundintranslation/Kaldi/blob/master/tools/sph2pipe_v2.5/sph2pipe))
+- [Django-nonrel](https://github.com/django-nonrel/django/tree/nonrel-1.3) For use with mongodb
+ 
 
 ### Motivations
 - Why use django
@@ -11,6 +13,8 @@
   * The Django server environment runs out of the box, meaning you can be visualizing and managing your data via a web-browser in minutes.
 - Why use a database backend
   * Backups for your data not only preserver the state of your data, but also the relations between them.
+- Why use MongoDB
+  * As a non-relational database MongoDB has great support for strings of arbitrary lengths, which makes it ideal for natural language processing.
 
 ### Relevant Settings Values
 - See csaesrapp.settings
