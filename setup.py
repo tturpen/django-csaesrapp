@@ -14,16 +14,31 @@
 import os
 from setuptools import setup
 
-README = open(os.path.join(os.path.dirname(__file__),'README.rst')).read()
+README = open(os.path.join(os.path.dirname(__file__),'README.md')).read()
 
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__),os.pardir)))
 
 setup(
       name='csaesrapp',
       version='0.1',
-      packages=['csaesrapp'],
+      packages=['csaesrapp','pymongo'],
       include_package_data=True,
       license='BSD 2-clause License',
       description='An app for submitting elicitation hits via Amazon Mechanical Turk',
       long_description=README,
+      url='https://github.com/tturpen/django-csaesrapp',
+      author='taylor turpen',
+      author_email='taylor.turpen@gmail.com',
+      classifiers=[
+                    'Environment :: Web Environment',
+                    'Framework :: Django',
+                    'Intended Audience :: Developers',
+                    'License :: OSI Approved :: BSD License', # example license
+                    'Operating System :: OS Independent',
+                    'Programming Language :: Python',
+                    'Programming Language :: Python :: 2.6',
+                    'Programming Language :: Python :: 2.7',
+                    'Topic :: Internet :: WWW/HTTP',
+                    'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+        ],      
       )
