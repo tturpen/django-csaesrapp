@@ -55,3 +55,5 @@ docs/_build/nohup.out
 nohup.out
 *.snr
 documents/
+*~
+#*
