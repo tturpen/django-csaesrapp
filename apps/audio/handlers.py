@@ -12,9 +12,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from subprocess import call, check_output
+from subprocess import call, check_output, CalledProcessError
 from apps.audio.exceptions import WavHandlerException, DuplicateSentenceIds
+from django.conf import settings
 import os
+import urllib2
+from urllib2 import URLError
+
 class WavHandler(object):
     """This class is for handling wav encoded files.""" 
     DEFAULT_SAMPLE_RATE = 16000
@@ -47,6 +51,34 @@ class SoxHandler(object):
     """This class is an interface to the Sox audio file handler"""
     SOXI_BINARY = "soxi"
     def get_wav_audio_length(self,system_uri):
-        length = float(check_output([self.SOXI_BINARY,"-D",system_uri]))
-        return length
+        try:
+            length = float(check_output([self.SOXI_BINARY,"-D",system_uri]))
+            return length
+        except CalledProcessError:
+            return -1
+        
     
+class RecordingHandler(object):
+    """Get files of recordings from urls"""
+    def __init__(self):
+        self.wav_base_url = "http://vocaroo.com/media_command.php?media=RECORDING_ID&command=download_wav"
+        self.record_id_tag = "RECORDING_ID"
+        self.recording_basedir = settings.RECORDING_DIR
+        
+    def download_vocaroo_recording(self,url,type="wav",worker_id=None,prompt_words=None):
+        if type=="wav":
+            remote_file_id = os.path.basename(url)
+            download_url = self.wav_base_url.replace(self.record_id_tag,remote_file_id)
+            download_url = download_url.replace(" ","")
+            dest = os.path.join(self.recording_basedir,
+                                os.path.basename(url)+\
+                                "_"+worker_id+\
+                                "_"+"_".join(prompt_words)+".wav")
+            if not os.path.exists(dest):
+                try:
+                    response = urllib2.urlopen(download_url).read()
+                    open(dest,"w").write(response)
+                except URLError:
+                    open("incorrectURLs.csv","a").write(worker_id+","+url+","+dest+","+prompt_words+"\n")
+                    return False        
+            return dest
