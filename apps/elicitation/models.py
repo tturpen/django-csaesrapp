@@ -25,6 +25,8 @@ from apps.common.fields import (CseasrListField,
 from djangotoolbox.fields import ListField, SetField
 from django.utils import timezone
          
+
+    
 class PromptSource(StateModel):
     """A file with a header and prompt on each line"""    
     sourcefile = models.FileField(upload_to='documents/%Y/%m/%d')    
@@ -50,27 +52,30 @@ class ResourceManagementPrompt(StateModel):
     word_count = models.IntegerField()
     words = CseasrListField(models.TextField())
     normalized_words = CseasrListField(models.TextField())
-        
     
-class ElicitationAudioRecording(AudioSource):
-    """Downloaded from Vocaroo given a submitted assignment
-    """
-    worker_id = models.TextField()
     
 class ElicitationHit(MturkHit):
     """The specific elicitation Hit class"""
     #prompts = CseasrListField(models.ForeignKey(ResourceManagementPrompt))
     prompt_source_name = models.TextField()
     prompts = CseasrListField()
-    template_name = models.TextField()    
-    redundancy = models.IntegerField()
+    #template_name = models.TextField()    
+    #redundancy = models.IntegerField()
     
     def __unicode__(self):
         return self.prompt_source_name
     
+class ElicitationAudioRecording(AudioSource):
+    """Downloaded from Vocaroo given a submitted assignment
+    """
+    prompt = models.ForeignKey(ResourceManagementPrompt)
+    worker_id = models.TextField()
+    recording_url = models.TextField()
+        
 class ElicitationAssignment(CsaesrAssignment):
     """The specific elicitation assignment class"""
     recordings = CseasrSetField(models.ForeignKey(ElicitationAudioRecording))
+    zipcode = models.TextField()
     hit = models.ForeignKey(ElicitationHit)
     
 class Worker(StateModel):
@@ -85,6 +90,8 @@ class Worker(StateModel):
     denied_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
     submitted_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
     blocked_elicitation_assignments = SetField(models.ForeignKey(ElicitationAssignment))
+    
+
     
     
 ###########          Queue models                  #################################################

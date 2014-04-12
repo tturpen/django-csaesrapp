@@ -29,10 +29,11 @@ class PromptInline(admin.TabularInline):
     model = ResourceManagementPrompt
     
 class AssignmentAdmin(admin.ModelAdmin):
-    list_display = ["hit"]
+    #set as prompt source from hit or something and then add all apps/elicitation as commit and then make new branch for stripping down common.pipelines
     formfield_overrides = {
                            SetField : {'widget' : SetFieldWidget}
                            }
+    list_display = ["assignment_id","hit"]
     
     
 class QueueAdmin(admin.ModelAdmin):
@@ -45,7 +46,8 @@ class QueueAdmin(admin.ModelAdmin):
 class HitAdmin(admin.ModelAdmin):
     pipeline = ElicitationPipeline()
     actions = ['remove_hit_from_mturk','get_hit_submitted_assignments']
-    list_display = ["template_name","prompt_source_name","hit_id","hit_type_id","prompt_count","redundancy"]
+    #list_display = ["template_name","prompt_source_name","hit_id","hit_type_id","prompt_count","redundancy"]
+    list_display = ["prompt_source_name","hit_id","hit_type_id","prompt_count"]
     def remove_hit_from_mturk(self,request, queryset):        
         for hit_model in queryset:
             self.pipeline.remove_hit_from_mturk(hit_model)

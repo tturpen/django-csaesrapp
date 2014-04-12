@@ -45,6 +45,7 @@ class ElicitationModelHandler(ModelHandler):
         self.c["prompts"] = ResourceManagementPrompt
         self.c["hits"] = ElicitationHit
         self.c["assignments"] = ElicitationAssignment
+        self.c["recording_sources"] = ElicitationAudioRecording
  
         self.state_map = ElicitationStateMap().state_map
         self.logger = logging.getLogger("transcription_engine.mongodb_elicitation_handler")
@@ -107,6 +108,11 @@ class ElicitationModelHandler(ModelHandler):
         
     def get_prompt_source_prompts(self,prompt_source):
         return ResourceManagementPrompt.objects.filter(source_id=prompt_source.pk)
+    
+    def get_cmu_prompt_word(self,prompt_id):
+        return self.c["prompts"].objects.get(pk=prompt_id).prompt_id
+    
+      
  
         
 
