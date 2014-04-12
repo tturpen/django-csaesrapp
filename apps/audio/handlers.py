@@ -22,7 +22,7 @@ from urllib2 import URLError
 class WavHandler(object):
     """This class is for handling wav encoded files.""" 
     DEFAULT_SAMPLE_RATE = 16000
-    SPH2PIPE_SYS_BINARY = "/home/taylor/repos/kaldi-stable/kaldi-stable/tools/sph2pipe_v2.5/sph2pipe"
+    SPH2PIPE_SYS_BINARY = settings.SPH2PIPE_BINARY
 
     def __init__(self):
         self.sox_handler = SoxHandler()

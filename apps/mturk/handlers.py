@@ -17,6 +17,7 @@ from boto.mturk import qualification
 from apps.mturk.exceptions import IncorrectTextFieldCount
 
 from django.template import RequestContext, loader, Context
+from django.conf import settings
 
 import os
 import logging
@@ -180,7 +181,7 @@ class HitHandler():
         
         html = template.render(context)
         html_question = HTMLQuestion(html,800)
-        open("/home/taylor/csaesr/tmp/hithtml.html","w").write(html)
+        open(settings.HIT_HTML_FILE,"w").write(html)
         quals = qualification.Qualifications()
         quals.add(qualification.LocaleRequirement("EqualTo","US"))
         #reward calculation
