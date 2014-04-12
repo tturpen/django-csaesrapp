@@ -1,0 +1,15 @@
+CseasrApp Structure
+-Django encourages modularity by allowing an arbitrary number of helper apps
+-CsaesrApp contains a number of utility apps within itself, for example:
+**the mturk app (apps.mturk) handles all operations with respect to MTurk (via boto)
+**the audio app (apps.audio) handles all operations dealing with audio files
+-Most importantly, the common app contains the common operations between the transcription and elicitation pipelines
+**apps.common.pipelines.MturkPipeline contains all the 
+Models in CsaesrApp
+-Django uses "model" as an extension for a classic "object".
+-Model definitions contain "field" data members
+-Because every model inheret's from Django's generic model definition, every model also comes with a very nice "form" (synonomous with an HTML form) that can easily be used to create new models!
+Model States in CsaesrApp
+-All models in csaesrapp inheret directly from StateModel, which means that they have an explicit state.
+-Model states are defined functionally by boolean functions defined in elicitation.statemaps.ElicitationStateMap
+-Model states are set after updating 
