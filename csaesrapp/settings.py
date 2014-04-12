@@ -1,7 +1,8 @@
 # Django settings for csaesrapp project.
 import os
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-
+MTURK_HOST =   'mechanicalturk.amazonaws.com'
+#MTURK_HOST='mechanicalturk.sandbox.amazonaws.com'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 BASE_DIR = "/home/taylor/workspace_csaesrengine/csaesrapp/"
@@ -15,10 +16,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
         'TEST_NAME': 'cseasr_app_test_db',
-        'NAME' : 'csaesrapp_test'
+        'NAME' : 'production_csaesrapp'
     }
 }
 
+RECORDING_DIR = "/home/taylor/data/speech/cmu_test_recordings/"
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []
