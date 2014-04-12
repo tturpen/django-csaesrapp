@@ -17,13 +17,17 @@ import logging
 
 class ModelFactory(object):
     def __init__(self):
+
         self.mh = ModelHandler()    
         self.logger = logging.getLogger("csaesr.apps.common_model_factory")
         
     def create_model(self,collection,search,document,update=True):
         """Check to see if the model exists given search,
             if not, create the model.
-            if update, update the model"""
+            if update, update the model
+            The only confusing part here is the ModelHandler holds the 
+            Model names in 'c', ie self.mh.c['assignments'](**document)
+            creates a new assignment object from the document."""
         model = self.mh.get_model(collection, search)
         if not model:
             model = self.mh.c[collection](**document)
@@ -36,7 +40,7 @@ class ModelFactory(object):
         return model       
     
     
-    def create_assignment_model(self,assignment,answers,hit_obj):
+    def create_assignment_model(self,assignment,answers,hit_obj,zipcode=None):
         """Create the assignment model with the transcription ids.
             AMTAssignmentStatus is the AMT assignment state.
             state is the engine lifecycle state."""
@@ -48,7 +52,9 @@ class ModelFactory(object):
                      "submit_time": assignment.SubmitTime,
                      "hit" : hit_obj,
                      "worker_id" : assignment.WorkerId,
-                     "recordings" : answers}
+                     "recordings" : answers,}
+        if zipcode:
+            document["zipcode"] = zipcode
         model = self.create_model("assignments", {"assignment_id": assignment_id},document)        
         return model
         

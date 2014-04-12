@@ -18,19 +18,18 @@ from boto.mturk.connection import MTurkConnection, MTurkRequestError, ResultSet
 
 from apps.mturk.handlers import AssignmentHandler, TurkerHandler, HitHandler
 from apps.normalization.handlers import NormalizationHandler
+from django.conf import settings
 
 class MturkPipeline(object):
 
     def __init__(self):
         aws_id = os.environ['AWS_ACCESS_KEY_ID']
         aws_k = os.environ['AWS_ACCESS_KEY']
-        #HOST='mechanicalturk.amazonaws.com'
-        HOST='mechanicalturk.sandbox.amazonaws.com'
-        
+                
         try:
             self.conn = MTurkConnection(aws_access_key_id=aws_id,\
                           aws_secret_access_key=aws_k,\
-                          host=HOST)
+                          host=settings.MTURK_HOST)
         except Exception as e:
             print(e) 
         self.ah = AssignmentHandler(self.conn)

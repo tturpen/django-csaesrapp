@@ -23,8 +23,9 @@ class StaticFile(StateModel):
 class AudioSource(StaticFile):
     """Audio sources are the original audio files...of anything."""
     encoding = models.TextField()
-    length_seconds = models.TimeField()
+    length_seconds = models.FloatField()
     sample_rate = models.FloatField()
+    filename = models.TextField()
     
     #Abstract base class
     class Meta:
