@@ -53,14 +53,15 @@ class ResourceManagementPrompt(StateModel):
     words = CseasrListField(models.TextField())
     normalized_words = CseasrListField(models.TextField())
     
+    def __unicode__(self):
+        return str(self.prompt_id)
+    
     
 class ElicitationHit(MturkHit):
     """The specific elicitation Hit class"""
     #prompts = CseasrListField(models.ForeignKey(ResourceManagementPrompt))
     prompt_source_name = models.TextField()
     prompts = CseasrListField()
-    #template_name = models.TextField()    
-    #redundancy = models.IntegerField()
     
     def __unicode__(self):
         return self.prompt_source_name

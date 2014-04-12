@@ -2,7 +2,6 @@ from django import forms
 from apps.elicitation.models import PromptSource, ElicitationAudioRecording, ElicitationAssignment
 
 class UploadFileForm(forms.Form):
-    title = forms.CharField(max_length=50)
     sourcefile  = forms.FileField()
     
 class PromptSourceForm(forms.ModelForm):

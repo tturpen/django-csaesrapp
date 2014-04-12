@@ -29,7 +29,6 @@ class PromptInline(admin.TabularInline):
     model = ResourceManagementPrompt
     
 class AssignmentAdmin(admin.ModelAdmin):
-    #set as prompt source from hit or something and then add all apps/elicitation as commit and then make new branch for stripping down common.pipelines
     formfield_overrides = {
                            SetField : {'widget' : SetFieldWidget}
                            }

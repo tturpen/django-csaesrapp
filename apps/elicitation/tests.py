@@ -6,6 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from django.conf import settings
 from apps.elicitation.pipelines import ElicitationPipeline
 import os
 
@@ -18,7 +19,7 @@ class SimpleTest(TestCase):
         pass
         
     def test_pipeline_load(self):
-        prompt_file_uri = "/home/taylor/workspace_csaesrengine/csaesrapp/resources/rm1partialprompts.snr"
+        prompt_file_uri = settings.PROMPT_FILE
         #This takes a while
         self.ep.load_PromptSource_RawToList(prompt_file_uri)
         self.ep.enqueue_prompts_and_generate_hits()

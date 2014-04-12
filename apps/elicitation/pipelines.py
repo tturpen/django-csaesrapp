@@ -16,6 +16,8 @@ import logging
 import os
 import sys
 
+from django.conf import settings
+
 from boto.mturk.connection import ResultSet
 
 from apps.common.pipelines import MturkPipeline
@@ -38,7 +40,7 @@ class ElicitationPipeline(MturkPipeline):
         self.mf = ElicitationModelFactory()
         #self.rma = ResourceManagementAdapter()
         
-        self.prompt_adapter = CMUPronunciationAdapter(wordlist_file="/home/taylor/csaesr/docs/CMUPronunciationWordList/wordlist.txt")
+        self.prompt_adapter = CMUPronunciationAdapter(wordlist_file=settings.WORD_FILTER_FILE)
         self.filter = StandardFilterHandler(self.mh)
         self.logger = logging.getLogger("csaesr_app.elicitation_pipeline_handler")
                 
@@ -79,6 +81,8 @@ class ElicitationPipeline(MturkPipeline):
             self.mh.enqueue_prompt(prompt,prompt_priority, max_queue_size=max_queue_size,qname=qname)
             prompt_queue = self.mh.get_current_queue(qname=qname)
             if prompt_queue:
+                print "got queue: %s"%qname
+                sys.stdout.flush()
                 self.create_hit_from_queue(prompt_queue,prompt_source,qname)
                 
     def create_hit_from_partial_queue(self,prompt_source,qname,size):
@@ -94,6 +98,7 @@ class ElicitationPipeline(MturkPipeline):
         prompt_pairs = self.mh.get_prompt_pairs_from_prompt_id(prompt_queue)
         template_name = "elicitation/cmuelicitationhit.html"
         if prompt_pairs:
+            sys.stdout.flush()
             hit_title = "Audio Elicitation"
             question_title = "Speak and Record your Voice" 
             keywords = "audio, elicitation, speech, recording"
@@ -196,8 +201,7 @@ class ElicitationPipeline(MturkPipeline):
 
                        
     def run(self):
-        #audio_file_dir = "/home/taylor/data/corpora/LDC/LDC93S3A/rm_comp/rm1_audio1/rm1/dep_trn"
-        prompt_file_uri = "/home/taylor/data/corpora/LDC/LDC93S3A/rm_comp/rm1_audio1/rm1/doc/al_sents.snr"
+        prompt_file_uri = settings.PROMPT_FILE
         selection = 0
         #self.get_time_submitted_for_assignments()
         while selection != "12":

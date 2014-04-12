@@ -14,17 +14,16 @@
         {% endfor %}
         </ul>
     {% else %}
-        <p>No documents.</p>
+        <p>No prompt sources currently uploaded.</p>
     {% endif %}
          <!-- Upload form. Note enctype attribute! --> 
         <form action="{% url 'admin:apps.elicitation.views.pslist' %}" method="post" enctype="multipart/form-data">
              {% csrf_token %}
             <p>{{ form.non_field_errors }}</p>
-            <p>Upload a new {{ form.sourcefile.label_tag }} where the first line of the source file is a header.</p>
+            <p>Upload a new CMU Promptsource {{ form.sourcefile.label_tag }}.</p>
             <p>
                 {{ form.sourcefile.errors }}
                 SourceFile: {{ form.sourcefile }}
-                Title: {{ form.title }}
             </p>            
             <p><input type="submit" name="submit" value="Upload" /></p>
         </form>
