@@ -1,11 +1,26 @@
 # Django settings for csaesrapp project.
 import os
+
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-MTURK_HOST =   'mechanicalturk.amazonaws.com'
-#MTURK_HOST='mechanicalturk.sandbox.amazonaws.com'
+#MTURK_HOST =   'mechanicalturk.amazonaws.com'
+MTURK_HOST='mechanicalturk.sandbox.amazonaws.com'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-BASE_DIR = "/home/taylor/workspace_csaesrengine/csaesrapp/"
+BASE_DIR = os.environ['CSAESR_BASE_DIR']
+
+#Only these words will be accepted from a prompt source
+WORD_FILTER_FILE = os.environ['CSAESR_WORD_FILTER_FILE']
+
+#Where would you like to record your files?
+RECORDING_DIR = os.environ['CSAESR_RECORDING_DIR']
+SPH2PIPE_BINARY = os.environ['CSAESR_SPH2PIPE_BINARY']
+
+#This is from the old pipeline, instead upload new prompt source via the admin interface
+PROMPT_FILE = os.environ['CSAESR_RM_PROMPTFILE']
+
+#This is where the HTML of the hits is written to, for debugging
+HIT_HTML_FILE = os.environ['CSAESR_HIT_HTML']
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -16,11 +31,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
         'TEST_NAME': 'cseasr_app_test_db',
-        'NAME' : 'production_csaesrapp'
+        'NAME' : 'dev_csaesrapp'
     }
 }
 
-RECORDING_DIR = "/home/taylor/data/speech/cmu_test_recordings/"
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []
@@ -114,8 +128,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(BASE_DIR,'templates'),  
-    '/home/taylor/workspace_csaesrengine/csaesrapp/apps/elicitation/templates/',  
-    #'/home/taylor/workspace_csaesrengine/csaesrapp/templates',
+    os.path.join(BASE_DIR,'apps','elicitation','templates'),
 )
 
 INSTALLED_APPS = (
