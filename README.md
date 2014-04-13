@@ -3,7 +3,8 @@
 - [boto](https://github.com/boto/boto )
 - [pymongo](http://api.mongodb.org/python/current/installation.html)
 - sph2pipe ([I got it here](https://github.com/foundintranslation/Kaldi/blob/master/tools/sph2pipe_v2.5/sph2pipe))
-- [Django-nonrel](https://github.com/django-nonrel/django/tree/nonrel-1.3) For use with mongodb
+- [Django-nonrel](https://github.com/django-nonrel/django/tree/nonrel-1.3) For use with mongodb, You will need to install this manually:
+ - pip install git+https://github.com/django-nonrel/django
 - [MongoDB](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/)
  
 
