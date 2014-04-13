@@ -21,7 +21,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__),os.pardir)))
 setup(
       name='csaesrapp',
       version='0.1',
-      packages=['csaesrapp','pymongo'],
+      packages=['csaesrapp'],
       include_package_data=True,
       license='BSD 2-clause License',
       description='An app for submitting elicitation hits via Amazon Mechanical Turk',
@@ -29,6 +29,7 @@ setup(
       url='https://github.com/tturpen/django-csaesrapp',
       author='taylor turpen',
       author_email='taylor.turpen@gmail.com',
+      install_requires=['pymongo'],
       classifiers=[
                     'Environment :: Web Environment',
                     'Framework :: Django',
