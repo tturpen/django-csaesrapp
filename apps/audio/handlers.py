@@ -79,6 +79,6 @@ class RecordingHandler(object):
                     response = urllib2.urlopen(download_url).read()
                     open(dest,"w").write(response)
                 except URLError:
-                    open("incorrectURLs.csv","a").write(worker_id+","+url+","+dest+","+prompt_words+"\n")
+                    open("incorrectURLs.csv","a").write(worker_id+","+url+","+dest+","+"_".join(prompt_words)+"\n")
                     return False        
             return dest
