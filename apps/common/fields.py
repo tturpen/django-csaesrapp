@@ -17,10 +17,16 @@ from djangotoolbox.fields import SetField, ListField
 from django import forms
 from django.db import models
 
+import sys
 from apps.common.widgets import SetFieldWidget
 
 
 class CseasrSetField(SetField):
+#     def __init__(self,*args,**kwargs):
+#         #super(SetField,self).__init__(*args,**kwargs)
+#         self.widget = SetFieldWidget
+    #widget = SetFieldWidget
+        
     def formfield(self, **kwargs):
         return SetFieldForm(**kwargs)
     
@@ -31,9 +37,23 @@ class CseasrListField(ListField):
 class SetFieldForm(forms.MultipleChoiceField):
     """Custom form field to display set field fields in models.
     """
-    wiget = SetFieldWidget
+#     def __init__(self):
+#         self.widget = SetFieldWidget
+#         super(forms.MultipleChoiceField)
+        
+    def prepare_value(self,value):
+        print "prepare_value value(%s) for setfieldform"%value
+        sys.stdout.flush()
+        return value 
+    
+    def to_python(self,value):
+        print "to_python value(%s) for setfieldform"%value
+        sys.stdout.flush()
+        return value 
     
     def clean(self,value):
+        print "Cleaning value(%s) for setfieldform"%value
+        sys.stdout.flush()
         return value
     
 class StringListField(forms.CharField):

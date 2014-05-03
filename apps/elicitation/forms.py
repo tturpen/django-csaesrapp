@@ -1,5 +1,8 @@
 from django import forms
 from apps.elicitation.models import PromptSource, ElicitationAudioRecording, ElicitationAssignment
+from apps.common.widgets import SetFieldWidget
+import sys
+
 
 class UploadFileForm(forms.Form):
     sourcefile  = forms.FileField()
@@ -27,11 +30,16 @@ class RMPromptForm(forms.ModelForm):
 class ElicitationAssignmentForm(forms.ModelForm):
     def __init__(self,*args,**kwargs):
         super(ElicitationAssignmentForm,self).__init__(*args,**kwargs)
-        self.fields['recordings'].widget.choices = [(i.pk, i) for i in ElicitationAudioRecording.objects.all()]
         if self.instance.pk:
-            self.fields['recordings'].initial = self.instance.field
+            print "widget help: " + str(help(self.fields['recordings'].widget))
+            sys.stdout.flush()
+            self.fields['recordings'].widget.choices = [(i,i) for i in self.instance.recordings]#objects.all() else None for i in ElicitationAudioRecording.objects.all()]
+            #self.fields['recordings'].widget = SetFieldWidget
+            self.fields['recordings'].initial = self.instance.recordings
             
     class Meta:
         model = ElicitationAssignment
-        
+        #widgets = {'recordings' : SetFieldWidget}
+
+ 
         

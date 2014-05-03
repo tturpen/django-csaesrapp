@@ -1,10 +1,11 @@
 from django.contrib import admin
 from apps.elicitation.models import ResourceManagementPrompt, PromptSource, ElicitationHit, PromptQueue, ElicitationAssignment 
-from apps.elicitation.forms import PromptSourceForm, UploadFileForm, RMPromptForm
+from apps.elicitation.forms import PromptSourceForm, UploadFileForm, RMPromptForm, ElicitationAssignmentForm
 from apps.elicitation import views
 from apps.elicitation.pipelines import ElicitationPipeline
 from apps.elicitation.handlers import ElicitationModelHandler
-from apps.elicitation.widgets import WordListEditorWidget, SetFieldWidget
+from apps.elicitation.widgets import WordListEditorWidget
+from apps.common.widgets import SetFieldWidget
 
 from apps.common.fields import CseasrListField
 #from apps.transcription.pipelines import TranscriptionPipeline
@@ -29,6 +30,8 @@ class PromptInline(admin.TabularInline):
     model = ResourceManagementPrompt
     
 class AssignmentAdmin(admin.ModelAdmin):
+    form = ElicitationAssignmentForm
+    
     formfield_overrides = {
                            SetField : {'widget' : SetFieldWidget}
                            }

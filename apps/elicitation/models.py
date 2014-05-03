@@ -21,6 +21,9 @@ from apps.common.models import (AudioSource,
                                 StateModel,)
 from apps.common.fields import (CseasrListField,
                                 CseasrSetField)
+
+from apps.common.widgets import SetFieldWidget
+
 #from apps.elicitation.pipelines.ElicitationPipeline import load_PromptSource_RawToList
 from djangotoolbox.fields import ListField, SetField
 from django.utils import timezone
