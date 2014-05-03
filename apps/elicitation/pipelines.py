@@ -189,7 +189,7 @@ class ElicitationPipeline(MturkPipeline):
                     if recording_obj:
                         recording_ids.append(recording_obj.pk)
                     else:
-                        break
+                        recording_ids.append(None)
                 else:
                     print("recording_ids(%s)"%recording_ids)
                     sys.stdout.flush()
