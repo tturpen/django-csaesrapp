@@ -1,0 +1,67 @@
+<html><head>
+<title>Audio Elicitation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'>
+</script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js">
+var words = ['alarm', 'answer', 'arm', 'back', 'balance', 'bass', 'brake', 'call', 'camera', 'cancel', 'cd', 'channel', 'clear', 'close', 'computer', 'control', 'cook', 'delete', 'dial', 'disarm', 'door', 'down', 'dvd', 'e-mail', 'eight', 'eject', 'fan', 'five', 'forward', 'four', 'front', 'go', 'halt', 'hang_up', 'help', 'high', 'home', 'in', 'intercom', 'left', 'light', 'lock', 'low', 'medium', 'minutes', 'motor', 'mute', 'next', 'nine', 'no', 'off', 'office', 'okay', 'on', 'one', 'open', 'out', 'oven', 'pause', 'phone', 'play', 'previous', 'radio', 'rear', 'record', 'redial', 'repeat', 'reset', 'resume', 'reverse', 'right', 'run', 'scan', 'seconds', 'security', 'select', 'set', 'seven', 'shuffle', 'six', 'skip', 'speaker', 'speed', 'start', 'step', 'stop', 'tape', 'temperature', 'three', 'time', 'track', 'treble', 'tv', 'two', 'unlock', 'up', 'volume', 'yes', 'zero', 'zone'];
+var index = 0;
+things.hide();
+var showHide = function() {
+	words.eq(index).fadeIn(2000,function(){
+    $(this).fadeOut(2000);
+  });
+  index++;
+  setTimeout(showHide,3000);
+};
+
+showHide();
+</script>
+<script type='text/javascript'>
+  alert(words);
+  function replacePrompt(){
+  prompt=getParameterByName("prompt");
+  if (prompt != "PROMPT_NOT_AVAILABLE"){
+  prompt = prompt.replace(/\_/g," ");
+  document.getElementById("textPrompt").innerHTML = prompt;
+  }
+  };
+  function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
+
+  function loadFuncs(){
+    replacePrompt();
+  }
+  window.onload = loadFuncs;  
+</script>
+</head><body>
+
+<div id="title">
+  <h3>Record Yourself Speaking the Prompt</h3>
+
+<div class="highlight-box">
+<ol>
+  <li>Click the red circle to record yourself.</li>
+  <li>Approve the flash settings.</li>
+  <li>Read the words after 'Prompt:'</li>
+  <li>Click 'Click to Stop'</li>
+  <li>Play the clip back to verify sound quality.</li>
+  <li>After you are happy with your recording, click 'Click here to save >>'</li>
+  <li>Copy & paste the URL under 'Sharing options' to the HIT.</li>
+</ol>
+</div>
+<p>
+Prompt: <div id="textPrompt" type="text" readOnly="True" style="font-size: 175%"></div>
+</p>
+<iframe src="http://vocaroo.com/?minimal" width="525" height="450" frameborder="0"></iframe><br>Powered by <a href="http://vocaroo.com" title="Voice Recorder">Vocaroo Voice Recorder</a>
+<style type="text/css"><!--
+.highlight-box { border:solid 0px #98BE10; background:#FCF9CE; color:#222222; padding:4px; text-align:left; font-size: bold;}
+-->
+</style>
+
+
+</body></html>
