@@ -13,9 +13,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from apps.common.exceptions import DuplicateSentenceIds, WrongPromptIdIndex
 import sys
+from copy import deepcopy as copy
 
 class LineBasedAdapter(object):
-    def __init__(self,header,delim,comment,id_index,wordlist=None):
+    def __init__(self,header,delim,comment,id_index,wordlist=None,use_wordlist_extras=True):
         self.header = header
         self.delim = delim
         self.comment = comment
@@ -52,6 +53,7 @@ class LineBasedAdapter(object):
             If id_index is None, use the line number as the indicator.
             Lines should not have a header."""
         d = {}
+        wordlist_only = copy(self.wordlist)
         for i, line in enumerate(lines):
             line = self.line_proc(line)
             if self.meets_constraints(line):
@@ -69,11 +71,19 @@ class LineBasedAdapter(object):
                         #Somehow this line's id is not unique
                         raise DuplicateSentenceIds
                     #Check for wordlist
-                    if self.wordlist and entry_id.lower() in self.wordlist:
+                    lower = entry_id.lower()
+                    if self.wordlist and lower in self.wordlist:
                         d[entry_id] = (pieces[:index]+pieces[index+1:],i)
+                        if lower in wordlist_only:
+                            wordlist_only.remove(lower)
                     elif not self.wordlist:
                         d[entry_id] = (pieces[:index]+pieces[index+1:],i)
                         
                 else:                                            
                     d[i] = (pieces,i)
+                    
+        if self.use_wordlist_extras:
+            for w in wordlist_only:
+                d[w] = (["UNKNOWN"],-1)
+            
         return d
