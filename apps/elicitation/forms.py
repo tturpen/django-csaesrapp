@@ -31,7 +31,7 @@ class ElicitationAssignmentForm(forms.ModelForm):
     def __init__(self,*args,**kwargs):
         super(ElicitationAssignmentForm,self).__init__(*args,**kwargs)
         if self.instance.pk:
-            print "widget help: " + str(help(self.fields['recordings'].widget))
+            #print "widget help: " + str(help(self.fields['recordings'].widget))
             sys.stdout.flush()
             self.fields['recordings'].widget.choices = [(i,i) for i in self.instance.recordings]#objects.all() else None for i in ElicitationAudioRecording.objects.all()]
             #self.fields['recordings'].widget = SetFieldWidget
