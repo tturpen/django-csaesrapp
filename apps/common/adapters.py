@@ -24,6 +24,7 @@ class LineBasedAdapter(object):
         self.id_proc = self.strip_newline
         self.line_proc = self.strip_and_replace_multiple_spaces
         self.wordlist = wordlist
+        self.use_wordlist_extras = use_wordlist_extras
         #constraint: expected return, function, value 
         self.constraints = [
                             (False,self.startswith,self.comment)#Startswith comment
