@@ -145,10 +145,11 @@ class ElicitationPipeline(MturkPipeline):
     def load_submitted_assignments_from_mturk(self,hit_obj):        
         hit_id = hit_obj.hit_id
         if self.mh.get_model("hits",{"hit_id": hit_id}):
-            assignments = self.conn.get_assignments(hit_id)
+            assignments = self.conn.get_assignments(hit_id,page_size=50)
             have_all_assignments = True
             assignment_ids = []
             assignment_count = 0
+            sys.stdout.flush()
             for assignment in assignments:
                 assignment_count += 1
                 assignment_id = assignment.AssignmentId

@@ -19,8 +19,12 @@ from apps.mturk.exceptions import IncorrectTextFieldCount
 from django.template import RequestContext, loader, Context
 from django.conf import settings
 
+from datetime import timedelta
+
 import os
 import logging
+
+import pdb
 
 class AssignmentHandler():
     def __init__(self,connection):
@@ -151,7 +155,57 @@ class HitHandler():
     def estimate_html_HIT_cost(self,prompts,reward_per_clip,
                                max_assignments):
         return reward_per_clip * len(prompts) * max_assignments
-    
+ 
+    def make_html_elicitation_multiprompt_HIT(self,promptset_indices,hit_title,prompt_title,keywords,
+                                  hit_description,
+                                  duration=DEFAULT_DURATION,
+                                  reward_per_clip=DEFAULT_REWARD,
+                                  max_assignments=DEFAULT_MAX_ASSIGNMENTS,
+                                  template='elicitation/cmumultipromptelicitationhit.html',
+                                  lifetime=timedelta(7)):
+        overview = Overview()
+        overview.append_field("Title", "Record yourself speaking the words in the prompt.")
+        descriptions = ["The following prompts are in English.",
+                        "Click the prompt to record your voice (Redirects to recording Page).",                        
+                        "Follow the directions on that page.",
+                        "You MUST record yourself saying the prompts TWICE.",                        
+                        "Copy and paste the EACH URL a SEPARATE box below the prompt.",
+                        "Each prompt must have two DIFFERENT recordings.",
+                        "You must NOT copy and paste the same URL twice for each recording."                        
+                        ]
+        keywords = "audio, recording, elicitation, English"
+        template = loader.get_template(template)
+
+        context = Context({"descriptions": descriptions,
+                   "promptset_indices": promptset_indices,
+                   })
+        
+        html = template.render(context)
+        html_question = HTMLQuestion(html,800)
+        open(settings.HIT_HTML_FILE,"w").write(html)
+        quals = qualification.Qualifications()
+        quals.add(qualification.LocaleRequirement("EqualTo","US"))
+        #reward calculation
+        reward = reward_per_clip*len(promptset_indices)
+        #pdb.set_trace()
+        try:
+            return self.conn.create_hit(title=hit_title,
+                                    question=html_question,
+                                    max_assignments=max_assignments,
+                                    description=hit_description,
+                                    keywords=keywords,
+                                    duration = duration,
+                                    qualifications = quals,
+                                    reward = reward,
+                                    lifetime = lifetime)
+        except MTurkRequestError as e:
+            if e.reason != "OK":
+                raise 
+            else:
+                print(e) 
+                return False
+        return False
+       
     def make_html_elicitation_HIT(self,prompt_pairs,hit_title,prompt_title,keywords,
                                   hit_description,
                                   duration=DEFAULT_DURATION,
@@ -186,6 +240,7 @@ class HitHandler():
         quals.add(qualification.LocaleRequirement("EqualTo","US"))
         #reward calculation
         reward = reward_per_clip*len(prompt_pairs)
+        #pdb.set_trace()
         try:
             return self.conn.create_hit(title=hit_title,
                                     question=html_question,
@@ -304,9 +359,36 @@ class HitHandler():
         return question_form, response
             
             
+def main():
+    aws_id = os.environ['AWS_ACCESS_KEY_ID']
+    aws_k = os.environ['AWS_ACCESS_KEY']
             
-            
-            
+    try:
+        conn = MTurkConnection(aws_access_key_id=aws_id,\
+                      aws_secret_access_key=aws_k,\
+                      host=settings.MTURK_HOST)
+    except Exception as e:
+        print(e) 
+
+    hh = HitHandler(conn)
+    hit_title = "Sequential Audio Elicitation"
+    question_title = "Speak and Record your Voice" 
+    keywords = "audio, elicitation, speech, recording"
+    hit_description = "Speak English prompts and record your voice."
+    max_assignments = 100
+    reward_per_clip = 2.5
+    duration = 60*50
+    one_month = timedelta(30)
+    hh.make_html_elicitation_multiprompt_HIT([3], hit_title, question_title, 
+                                             keywords,
+                                             duration=duration,
+                                             hit_description=hit_description,
+                                             max_assignments=max_assignments,
+                                             reward_per_clip=reward_per_clip,
+                                             lifetime=one_month)
+          
+if __name__=="__main__":
+    main()
             
             
             
