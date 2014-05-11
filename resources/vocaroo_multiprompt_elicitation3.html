@@ -1,0 +1,65 @@
+<html><head>
+<title>Audio Elicitation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'></script>
+<script type="text/javascript">
+var words = ['select', 'set', 'seven', 'shuffle', 'six', 'skip', 'speaker', 'speed', 'start', 'step', 'stop', 'tape', 'temperature', 'three', 'time', 'track', 'treble', 'tv', 'two', 'unlock', 'up', 'volume', 'yes', 'zero', 'zone',''];
+var index = 0;
+$(document).ready(function(){ 
+		$("#begin").click(startWords);
+		$("#pause").click(pauseWords);
+});
+var intervalset = false;
+function startWords(){
+	var prompt = document.getElementById("textPrompt");
+	index = 0;
+	if(!intervalset){
+		intervalset = true;
+		setInterval(showHide,1600);
+	} 
+	function showHide() {
+		m = index % 2;
+		if(index < words.length){
+			prompt.innerHTML = words[index];
+			index++;
+		}
+	};
+};
+function pauseWords(){
+	alert("Click OK to continue");
+	clearInterval(showHide);	
+}
+</script>
+
+</head><body>
+
+<div id="title">
+  <h3>Record Yourself Speaking the Prompt</h3>
+
+<div class="highlight-box">
+<ol>
+  <li>Click the red circle to record yourself.</li>
+  <li>Approve the flash settings.</li>
+  <li>AFTER you have begun recording, click BEGIN</li>
+  <li>Read the words as the appear after 'Prompt:'</li>
+  <li>Click 'Click to Stop'</li>
+  <li>Play the clip back to verify sound quality.</li>
+  <li>After you are happy with your recording, click 'Click here to save >>'</li>
+  <li>Copy & paste the URL under 'Sharing options' to the HIT.</li>
+</ol>
+</div>
+<p>
+Prompt: <div id="textPrompt" type="text" readOnly="True" style="font-size: 175%"></div>
+</p>
+<p>
+<button id="begin" type="button">CLICK AFTER YOU BEGIN RECORDING</button>
+<button id="pause" type="button">PAUSE</button>
+</p>
+<iframe src="http://vocaroo.com/?minimal" width="525" height="450" frameborder="0"></iframe><br>Powered by <a href="http://vocaroo.com" title="Voice Recorder">Vocaroo Voice Recorder</a>
+<style type="text/css"><!--
+.highlight-box { border:solid 0px #98BE10; background:#FCF9CE; color:#222222; padding:4px; text-align:left; font-size: bold;}
+-->
+</style>
+
+
+</body></html>
