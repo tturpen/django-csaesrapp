@@ -1,0 +1,127 @@
+<html><head>
+<title>{{ title }}</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'>
+</script>
+<script type='text/javascript'>
+  function disableInput(){
+  hit_id=getParameterByName("assignmentId");
+  if (hit_id == "ASSIGNMENT_ID_NOT_AVAILABLE"){
+		{% for audioset_url, audioset_id, count in audioset_url_ids %}
+			document.getElementById("{{ audioset_id }}").disabled = true;
+		{% endfor %}
+  };
+  function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }
+  function validateForm(){
+	  if (window.validate)
+		  return true;
+	  else
+              {
+                   alert("Please make sure to listen to every audio clip.");
+                   return false;
+              }
+  }
+  function disableSubmitButton(){
+	  window.validate = false;
+	  document.getElementById("submitButton").setAttribute('onclick','return validateForm();');
+  }
+  
+  function enableSubmitButton(audioId){
+  window.listenedIds[window.idsCount] = audioId;
+  window.idsCount += 1;
+  window.validate = compareArrays(window.audioIds,window.listenedIds);
+  }
+
+  function compareArrays(ref,hyp){
+  var reflen = ref.length;
+  var hyplen = hyp.length;
+  var same = false;
+
+  for(var i = 0; i < reflen; i++){
+     same = false;
+
+     for(var j = 0; j < hyplen; j++){
+	if (ref[i].localeCompare(hyp[j]) === 0) {
+			same = true;
+			}
+     }
+
+     if(!same){
+	return false;
+	}
+  }
+  return true;
+}
+
+
+  function loadFuncs(){
+	  disableInput();
+	  disableSubmitButton();
+          //addAudioEventListeners();
+  window.audioIds = [];
+	{% for audioset_url, audioset_id, count in audioset_url_ids %}
+  		window.audioIds.push({{ audioset_id }});
+	{% endfor %}
+  window.listenedIds = new Array();
+  window.idsCount = 0;
+  }
+  window.onload = loadFuncs;  
+  function play(id){
+	  document.getElementById(id).play();
+  }
+</script>
+<style type="text/css">
+  .row {  height:auto !important; }
+  .list {display: none; }
+  .show {display: none; }
+  .hide:target + .show {display: inline; }
+  .hide:target {display: inline; }
+  .hide:target ~ .list {display:inline; }
+  @media print { .hide, .show {display: none; }}
+</style>
+</head><body><form name="mturk_form" method="post" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit"><input type="hidden" value="" name="assignmentId" id="assignmentId" />
+<div id="title">
+  <h3>Transcribe the audio</h3>
+
+<div class="highlight-box">
+  <a href="#hide1" class="hide" id="hide1">Expand Example</a>
+  <a href="#show1" class="show" id="show1">Collapse Example</a>
+	  <ul>
+	  	{% for description in descriptions %}
+			<li>{{ description }}</li>
+		{% endfor %}
+	  </ul>
+  <div class="list">
+    <audio controls="" id="12345" onfocus="play('12345');"><source src="http://www.cis.upenn.edu/~tturpen/wavs/hub4/example/se96C19_0022.wav" type="audio/wav" /> Your browser does not support the audio element.</audio>
+    <p>Transcription:</p>
+    <p>"japonés en méxico señor terada"</p>
+</div>
+</div>
+
+</div>
+
+<div>&nbsp;</div>
+{% for audioset_url, audioset_id, count in audioset_url_ids %}
+	<p>
+	<audio id='audio{{ audioset_id }}' controls="" onended="enableSubmitButton('{{ audioset_id }}');" onfocus="play('audio{{ audioset_id }}');"><source src="{{ audioset_url }}" type="audio/wav" /> Your browser does not support the audio element.</audio>
+	</p>
+	
+	<p>Transcription:</p>
+	
+	<p><input id="{{ count }}" name="{{ audioset_id }}" size="100" type="text" /></p>
+	<p>
+{% endfor %}
+
+<style type="text/css"><!--
+.highlight-box { border:solid 0px #98BE10; background:#FCF9CE; color:#222222; padding:4px; text-align:left; font-size: bold;}
+-->
+</style>
+</p>
+<p>
+<input type="submit" id="submitButton" value="Submit" /></p></form><script language="Javascript">turkSetAssignmentID();</script>
+</body></html>

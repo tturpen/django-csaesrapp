@@ -2,8 +2,8 @@
 import os
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-#MTURK_HOST =   'mechanicalturk.amazonaws.com'
-MTURK_HOST='mechanicalturk.sandbox.amazonaws.com'
+MTURK_HOST =   'mechanicalturk.amazonaws.com'
+#MTURK_HOST='mechanicalturk.sandbox.amazonaws.com'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 BASE_DIR = os.environ['CSAESR_BASE_DIR']
@@ -21,6 +21,9 @@ PROMPT_FILE = os.environ['CSAESR_RM_PROMPTFILE']
 #This is where the HTML of the hits is written to, for debugging
 HIT_HTML_FILE = os.environ['CSAESR_HIT_HTML']
 
+#Fast and loose base directory
+FAL_BASE_DIR = os.environ['FAL_BASE_DIR']
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -31,7 +34,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine',
         'TEST_NAME': 'cseasr_app_test_db',
-        'NAME' : 'dev_csaesrapp'
+        'NAME' : 'dev_fal_csaesrapp'
     }
 }
 

@@ -165,11 +165,11 @@ class HitHandler():
                                   lifetime=timedelta(7)):
         overview = Overview()
         overview.append_field("Title", "Record yourself speaking the words in the prompt.")
-        descriptions = ["The following prompts are in English.",
+        descriptions = ["The following prompts are in English. FLUENT English only.",
                         "Click the prompt to record your voice (Redirects to recording Page).",                        
                         "Follow the directions on that page.",
                         "You MUST record yourself saying the prompts TWICE.",                        
-                        "Copy and paste the EACH URL a SEPARATE box below the prompt.",
+                        "Copy and paste the EACH URL in a SEPARATE box below the prompt.",
                         "Each prompt must have two DIFFERENT recordings.",
                         "You must NOT copy and paste the same URL twice for each recording."                        
                         ]
@@ -258,6 +258,62 @@ class HitHandler():
                 return False
         return False
     
+    def make_html_spanish_transcription_HIT(self,
+                                            audio_clip_tups,
+                                            hit_title,
+                                            question_title,
+                                            hit_description="Type the words you hear.",
+                                            keywords="audio, transcription, English",
+                                            duration=DEFAULT_DURATION,
+                                            reward_per_clip=DEFAULT_REWARD,
+                                            max_assignments=DEFAULT_MAX_ASSIGNMENTS,
+                                            template='elicitation/ldchub4transcriptionhit.html',
+                                            descriptions=["Listen to the clip and write the words that are said."],
+                                            lifetime=timedelta(7)):        
+        overview = Overview()
+        overview.append_field("Title", hit_title)
+                                
+        count = 0
+        audioset_url_ids = []
+        for acurl, acid in audio_clip_tups:
+            audioset_url_ids.append((acurl,acid,count))
+            count += 1
+            
+       
+        template = loader.get_template(template)
+
+        context = Context({"descriptions": descriptions,
+                   "audioset_url_ids": audioset_url_ids,
+                   })
+        
+        html = template.render(context)
+        html_question = HTMLQuestion(html,800)
+        open(settings.HIT_HTML_FILE,"w").write(html)
+        quals = qualification.Qualifications()
+        quals.add(qualification.LocaleRequirement("EqualTo","US"))
+
+        
+        #reward calculation
+        reward = reward_per_clip*len(audioset_url_ids)
+        try:            
+            response = self.conn.create_hit(title=hit_title,
+                                    question=html_question,
+                                    max_assignments=max_assignments,
+                                    description=hit_description,
+                                    keywords=keywords,
+                                    duration = duration,
+                                    reward = reward,
+                                    lifetime=lifetime)
+            return response
+            
+        except MTurkRequestError as e:
+            if e.reason != "OK":
+                raise 
+            else:
+                print(e) 
+                return False
+        return False
+        
     def make_html_transcription_HIT(self,audio_clip_urls,hit_title,question_title,description,keywords,
                                duration=DEFAULT_DURATION,reward_per_clip=DEFAULT_REWARD,max_assignments=DEFAULT_MAX_ASSIGNMENTS):        
         overview = Overview()
@@ -326,7 +382,7 @@ class HitHandler():
                 print(e) 
                 return False
         return False
-        
+
     def make_question_form_HIT(self,audio_clip_urls,hit_title,question_title,description,keywords,
                                duration=DEFAULT_DURATION,reward=DEFAULT_REWARD):
         overview = Overview()        
@@ -359,7 +415,7 @@ class HitHandler():
         return question_form, response
             
             
-def main():
+def fal_elicitations():
     aws_id = os.environ['AWS_ACCESS_KEY_ID']
     aws_k = os.environ['AWS_ACCESS_KEY']
             
@@ -376,17 +432,23 @@ def main():
     keywords = "audio, elicitation, speech, recording"
     hit_description = "Speak English prompts and record your voice."
     max_assignments = 100
-    reward_per_clip = 2.5
+    reward_per_clip = .62
     duration = 60*50
-    one_month = timedelta(30)
-    hh.make_html_elicitation_multiprompt_HIT([3], hit_title, question_title, 
+    one_month = timedelta(40)
+    raise Exception#Disable this when ready to submit hits
+    #Make sure to set the sequential_template_number below
+    sequential_template_number = None
+    print hh.make_html_elicitation_multiprompt_HIT([], hit_title, question_title, 
                                              keywords,
                                              duration=duration,
                                              hit_description=hit_description,
                                              max_assignments=max_assignments,
                                              reward_per_clip=reward_per_clip,
                                              lifetime=one_month)
-          
+    
+def main():
+    pass
+
 if __name__=="__main__":
     main()
             

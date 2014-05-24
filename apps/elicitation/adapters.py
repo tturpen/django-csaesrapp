@@ -50,5 +50,8 @@ class CMUPronunciationAdapter(LineBasedAdapter):
         return d
         
     def get_prompt_id_from_assignment_answer_id(self,assignment_answer_id):
+        if assignment_answer_id.count("0") == len(assignment_answer_id):
+            #If there is only one recording, the number of zeros is the prompt id
+            return len(assignment_answer_id) - 1
         return assignment_answer_id.lstrip("0")
         

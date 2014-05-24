@@ -199,7 +199,6 @@ class ElicitationPipeline(MturkPipeline):
 #                     self.mh.add_item_to_artifact_set("workers", worker_oid, "submitted_assignments", assignment_id)
             print("Elicitation HIT(%s) submitted assignments: %s "%(hit_id,assignment_ids))    
         print "Assignment Count: %s" % assignment_count
-
                        
     def run(self):
         prompt_file_uri = settings.PROMPT_FILE
@@ -236,3 +235,7 @@ class ElicitationPipeline(MturkPipeline):
 #                 self.get_assignment_stats()
             else:
                 selection = "12"
+                
+if __name__=="__main__":
+    ep = ElicitationPipeline()
+    ep.run()

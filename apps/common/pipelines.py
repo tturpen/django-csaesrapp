@@ -37,7 +37,7 @@ class MturkPipeline(object):
         self.hh = HitHandler(self.conn)
         self.normalizer = NormalizationHandler()
         self.balance = self.conn.get_account_balance()[0].amount
-        self.batch_cost = 70
+        self.batch_cost = 10
         if self.balance > self.batch_cost:
             self.balance = self.batch_cost
         else:
