@@ -60,25 +60,25 @@ class SoxHandler(object):
     
 class RecordingHandler(object):
     """Get files of recordings from urls"""
+    recording_basedir = settings.RECORDING_DIR
     def __init__(self):
         self.wav_base_url = "http://vocaroo.com/media_command.php?media=RECORDING_ID&command=download_wav"
         self.record_id_tag = "RECORDING_ID"
-        self.recording_basedir = settings.RECORDING_DIR
         
-    def download_vocaroo_recording(self,url,type="wav",worker_id=None,prompt_words=None):
+    def download_vocaroo_recording(self,url,type="wav",worker_id=None,prompt_name=None,dest_dir=recording_basedir):
         if type=="wav":
             remote_file_id = os.path.basename(url)
             download_url = self.wav_base_url.replace(self.record_id_tag,remote_file_id)
             download_url = download_url.replace(" ","")
-            dest = os.path.join(self.recording_basedir,
+            dest = os.path.join(dest_dir,
                                 os.path.basename(url)+\
                                 "_"+worker_id+\
-                                "_"+"_".join(prompt_words)+".wav")
+                                "_"+"_".join(prompt_name)+".wav")
             if not os.path.exists(dest):
                 try:
                     response = urllib2.urlopen(download_url).read()
                     open(dest,"w").write(response)
                 except URLError:
-                    open("incorrectURLs.csv","a").write(worker_id+","+url+","+dest+","+"_".join(prompt_words)+"\n")
+                    open("incorrectURLs.csv","a").write(worker_id+","+url+","+dest+","+"_".join(prompt_name)+"\n")
                     return False        
             return dest
