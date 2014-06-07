@@ -37,11 +37,11 @@ class MturkPipeline(object):
         self.hh = HitHandler(self.conn)
         self.normalizer = NormalizationHandler()
         self.balance = self.conn.get_account_balance()[0].amount
-        self.batch_cost = 10
+        self.batch_cost = 2#This is just a soft way to prevent you from spending all your money
         if self.balance > self.batch_cost:
             self.balance = self.batch_cost
         else:
-            raise IOError
+            raise IOError#This is just a soft way to prevent you from spending all your money
         self.cost_sensitive = True
         
 #These are the methods from the older non-app pipeline, notall of them are implemented.        

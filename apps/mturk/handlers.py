@@ -423,6 +423,7 @@ def fal_elicitations():
         conn = MTurkConnection(aws_access_key_id=aws_id,\
                       aws_secret_access_key=aws_k,\
                       host=settings.MTURK_HOST)
+        print "Connection HOST: %s" % settings.MTURK_HOST
     except Exception as e:
         print(e) 
 
@@ -431,22 +432,26 @@ def fal_elicitations():
     question_title = "Speak and Record your Voice" 
     keywords = "audio, elicitation, speech, recording"
     hit_description = "Speak English prompts and record your voice."
-    max_assignments = 100
+    max_assignments = 15
     reward_per_clip = .62
     duration = 60*50
     one_month = timedelta(40)
     raise Exception#Disable this when ready to submit hits
     #Make sure to set the sequential_template_number below
     sequential_template_number = None
-    print hh.make_html_elicitation_multiprompt_HIT([], hit_title, question_title, 
+    response = hh.make_html_elicitation_multiprompt_HIT([], hit_title, question_title, 
                                              keywords,
                                              duration=duration,
                                              hit_description=hit_description,
                                              max_assignments=max_assignments,
                                              reward_per_clip=reward_per_clip,
                                              lifetime=one_month)
-    
+    if response and len(response) > 0:
+        r = response[0]
+        print("HITId: %s"%r.HITId)
+        
 def main():
+    fal_elicitations()
     pass
 
 if __name__=="__main__":

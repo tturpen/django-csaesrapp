@@ -5,18 +5,20 @@
 </script>
 <script type='text/javascript'>
   function disableInput(){
-  hit_id=getParameterByName("assignmentId");
-  if (hit_id == "ASSIGNMENT_ID_NOT_AVAILABLE"){
-		{% for audioset_url, audioset_id, count in audioset_url_ids %}
-			document.getElementById("{{ audioset_id }}").disabled = true;
-		{% endfor %}
-  };
+	  hit_id=getParameterByName("assignmentId");
+	  if (hit_id == "ASSIGNMENT_ID_NOT_AVAILABLE"){
+			{% for audioset_url, audioset_id, count in audioset_url_ids %}
+				document.getElementById("{{ audioset_id }}").disabled = true;
+			{% endfor %}
+	  };
+  }
   function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
     return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
   }
+  
   function validateForm(){
 	  if (window.validate)
 		  return true;
@@ -61,7 +63,7 @@
 
   function loadFuncs(){
 	  disableInput();
-	  disableSubmitButton();
+	  //disableSubmitButton();
           //addAudioEventListeners();
   window.audioIds = [];
 	{% for audioset_url, audioset_id, count in audioset_url_ids %}
@@ -86,7 +88,7 @@
 </style>
 </head><body><form name="mturk_form" method="post" id="mturk_form" action="https://www.mturk.com/mturk/externalSubmit"><input type="hidden" value="" name="assignmentId" id="assignmentId" />
 <div id="title">
-  <h3>Transcribe the audio</h3>
+  <h3>Transcribe the Spanish audio</h3>
 
 <div class="highlight-box">
   <a href="#hide1" class="hide" id="hide1">Expand Example</a>
@@ -108,12 +110,12 @@
 <div>&nbsp;</div>
 {% for audioset_url, audioset_id, count in audioset_url_ids %}
 	<p>
-	<audio id='audio{{ audioset_id }}' controls="" onended="enableSubmitButton('{{ audioset_id }}');" onfocus="play('audio{{ audioset_id }}');"><source src="{{ audioset_url }}" type="audio/wav" /> Your browser does not support the audio element.</audio>
+	<audio id="audio{{ audioset_id }}" controls="" onended="enableSubmitButton('{{ audioset_id }}');" onfocus="play('audio{{ audioset_id }}');"><source src="{{ audioset_url }}" type="audio/wav" /> Your browser does not support the audio element.</audio>
 	</p>
 	
 	<p>Transcription:</p>
 	
-	<p><input id="{{ count }}" name="{{ audioset_id }}" size="100" type="text" /></p>
+	<p><input id="{{ audioset_id }}" name="{{ audioset_id }}" size="100" type="text" /></p>
 	<p>
 {% endfor %}
 

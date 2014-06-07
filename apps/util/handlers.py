@@ -40,7 +40,7 @@ class WerHandler(object):
                     d[i][j] = min(sub,ins,deletion)
         return float(d[len(ref)][len(hyp)])/float(len(ref))
     
-    def cer_wer(self,ref,hyp):
+    def cer_wer(self,ref,hyp,min_char_df=MAXIMUM_WRONG_CHARACTERS):
         d = []
         #zeros
         for j in range(len(ref)+1):
@@ -55,7 +55,7 @@ class WerHandler(object):
         #calculate            
         for i in range(1, len(d)):
             for j in range(1, len(d[0])):
-                if self.cer_compare(ref[i-1].lower(),hyp[j-1].lower()):
+                if self.cer_compare(ref[i-1].lower(),hyp[j-1].lower(),min_char_df=min_char_df):
                     d[i][j] = d[i-1][j-1]
                 else:
                     sub = d[i-1][j-1] + 1
@@ -64,14 +64,14 @@ class WerHandler(object):
                     d[i][j] = min(sub,ins,deletion)
         return float(d[len(ref)][len(hyp)])/float(len(ref))
     
-    def cer_compare(self,ref_tok,hyp_tok):
+    def cer_compare(self,ref_tok,hyp_tok,min_char_df=MAXIMUM_WRONG_CHARACTERS):
         """If the reference token has the minimum number of characters
             and the character error rate is below the threshold
             return True
             else return False or their comparison"""
         cer = self.wer(ref_tok,hyp_tok)
         if len(ref_tok) >= self.MINMUM_CHARACTERS_FOR_CER:
-            if cer <= self.MAXIMUM_WRONG_CHARACTERS/len(ref_tok):
+            if cer <= min_char_df/len(ref_tok):
                 return True
             return False
         return ref_tok == hyp_tok
